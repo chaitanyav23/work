@@ -57,3 +57,29 @@ Room type (open outdoor / small room / hallway / vehicle cabin)
 Mic handling artifacts:
 Rustling, occlusion (covered mic), breath pops, plosives
 “Speech masked by noise” segments (timestamps + severity)
+
+
+far-field speech
+wind
+street noise
+cars
+sirens
+clothing friction
+moments
+reverb
+cross-talk
+radio chatter
+shouting crying
+sudden/long term overlap, speech 
+filler words
+
+
+https://www.youtube.com/watch?v=_6piL1TExWE
+https://www.youtube.com/watch?v=EXo8GjpOXEg
+https://www.youtube.com/watch?v=KKjdJfLp9Ok&list=PLDm4OwxvvCURLU_vrDt7ofYIBhh7Qrr6a&index=12
+https://www.youtube.com/watch?v=zWJBVJtVNKc&list=PLDm4OwxvvCURLU_vrDt7ofYIBhh7Qrr6a&index=10
+https://www.youtube.com/watch?v=M6cxw4qoXYI
+https://www.youtube.com/watch?v=QdK0_5SUERU
+https://www.youtube.com/watch?v=4aH5dY1hmiM
+https://www.youtube.com/watch?v=Zw1o7tx_vIA
+https://www.youtube.com/watch?v=UVKeYRgwAp4  -  This has overlapping conversation
