@@ -15,46 +15,46 @@ https://theses.gla.ac.uk/85716/
 The Interactive Emotional Dyadic Motion Capture (IEMOCAP) dataset is a multimodal and multispeaker database designed for emotion recognition tasks.
 https://huggingface.co/datasets/AbstractTTS/IEMOCAP
 
-The MSP-Podcast dataset is a comprehensive collection of speech segments from podcast recordings, annotated for emotional content using crowdsourcing. This dataset is particularly valuable for research in speech emotion recognition and emotion recognition tasks.
+The MSP-Podcast dataset is a comprehensive collection of speech segments from podcast recordings, annotated for emotional content using crowdsourcing. This dataset is particularly valuable for research in speech emotion recognition and emotion recognition tasks.                                                                        YES
 
 The Multimodal EmotionLines Dataset (MELD) is a comprehensive dataset designed for emotion recognition in conversations. includes over 1,400 dialogues and 13,000 utterances.
 Each utterance in MELD is annotated with one of seven emotions: Anger, Disgust, Sadness, Joy, Neutral, Surprise, and Fear, along with sentiment labels (positive, neutral, negative). 
 
-https://ai.meta.com/datasets/casual-conversations-v2-dataset/
+https://ai.meta.com/datasets/casual-conversations-v2-dataset/                                                   NO
 
-https://emodb.bilderbar.info/index-1280.html
+https://emodb.bilderbar.info/index-1280.html                                                   NO
 
-http://voice.fub.it/activities/corpora/emovo/index.html
+http://voice.fub.it/activities/corpora/emovo/index.html                                                   NO
 
-https://huggingface.co/collections/mapama247/conversational-datasets
+https://huggingface.co/collections/mapama247/conversational-datasets                                                   NO
 
 https://github.com/microsoft/MS-SNSD                                                               YES
 
-https://www.twine.net/blog/100-audio-and-video-datasets/
+https://www.twine.net/blog/100-audio-and-video-datasets/                              NO
 
 https://bjs.ojp.gov/content/pub/pdf/bwclea16.pdf                                                   YES
 
-https://journals.sagepub.com/doi/pdf/10.1177/23794607241308636
+https://journals.sagepub.com/doi/pdf/10.1177/23794607241308636                                     YES - Methodoly
 
-https://www.nist.gov/ctl/pscr/body-worn-camera-analytics-public-safety
+https://www.nist.gov/ctl/pscr/body-worn-camera-analytics-public-safety                              NO
 
-https://www.nber.org/system/files/working_papers/w28622/w28622.pdf
+https://www.nber.org/system/files/working_papers/w28622/w28622.pdf                              NO
 
-https://ieeexplore.ieee.org/abstract/document/10888621/authors#authors
-https://github.com/97jamie/public-police-footage
+https://ieeexplore.ieee.org/abstract/document/10888621/authors#authors                              NO
+https://github.com/97jamie/public-police-footage                                                    NO  
 
-https://www.semanticscholar.org/reader/f0dbdf9665f1d810f3d6a8fa3092c7307920d874
-https://ieeexplore.ieee.org/document/5995406
+https://export.arxiv.org/pdf/1904.09062v1                                                          Methodology
+https://ieeexplore.ieee.org/document/5995406                                                       Methodology
 
-https://www.semanticscholar.org/reader/51381ab7f044ac5b44cdfa4d8b73be299cb51779			   NO
+https://www.semanticscholar.org/reader/51381ab7f044ac5b44cdfa4d8b73be299cb51779			               NO
 
-https://www.semanticscholar.org/paper/Identifying-Individuals-Through-Egocentric-Motion%3A-Hans-Dugelay/df9da0f36a94432a64aab76a8e4b3e2641f4feb6
+https://www.semanticscholar.org/paper/Identifying-Individuals-Through-Egocentric-Motion%3A-Hans-Dugelay/df9da0f36a94432a64aab76a8e4b3e2641f4feb6                          NO
 
-https://mpra.ub.uni-muenchen.de/103994/1/MPRA_paper_103994.pdf                                     MAYBE
+https://mpra.ub.uni-muenchen.de/103994/1/MPRA_paper_103994.pdf                                     NO
 
-https://www.researchgate.net/publication/370770119_The_'civilizing_effect'_and_'deterrence_spectrum'_revisited_results_of_a_national_study_of_body-worn_cameras_on_fatal_police_force
+https://www.researchgate.net/publication/370770119_The_'civilizing_effect'_and_'deterrence_spectrum'_revisited_results_of_a_national_study_of_body-worn_cameras_on_fatal_police_force                      NO
 
-https://www.crcv.ucf.edu/research/data-sets/ucf101/
+https://www.crcv.ucf.edu/research/data-sets/ucf101/                                                NO
 
-https://www.semanticscholar.org/paper/Action-Recognition-in-Law-Enforcement%3A-A-Novel-from-Hans-Dugelay/2063f2ef47815647407e47dd0272c6d955194b1b
+https://www.semanticscholar.org/paper/Action-Recognition-in-Law-Enforcement%3A-A-Novel-from-Hans-Dugelay/2063f2ef47815647407e47dd0272c6d955194b1b                            NO
 
