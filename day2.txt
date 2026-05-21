@@ -1,0 +1,59 @@
+Dataset Creation & Evaluation Plan
+1. Dataset Categories
+We plan to build a diverse dataset covering three key sources:
+Body-Worn Camera (BWC) recordings
+Podcasts
+News channel debates
+2. Key Observations & Attributes to Capture
+A. Audio Quality & Environment
+Background noise types (traffic, crowd, indoor, etc.)
+Noise levels and pitch variations 
+Accent variations across speakers
+B. Speech & Transcription Metrics
+Word Error Rate (WER)
+Transcription Error Rate
+Speaker Diarization Error Rate
+C. Conversation-Level Attributes
+Speaker proximity:
+People speaking near vs far
+Overlapping speech:
+Frequency
+Duration
+Conversation challenges:
+Interruptions
+Crosstalk
+Clarity issues
+D. Acoustic & Interaction Features
+Voice pitch variations
+Signal quality / distortion levels
+Temporal characteristics of speech segments
+E. Emotion & Behavioral Signals
+Emotion detection categories:
+Crying
+Shouting
+Screaming
+Neutral / calm
+Additional behavioral cues (tone, intensity, stress)
+3. Next Steps – Solution Evaluation
+Once dataset and observations are established:
+Evaluate solutions for:
+Speech-to-Text (Transcription)
+Speaker Diarization
+Emotion Detection
+Benchmark performance across all categories (BWC, podcasts, debates)
+
+
+above is just a sample i want you to go deeper and add more suitable attributes, and applicable to our task 
+for example 
+Noise type (multi-label):
+Traffic / road, wind, rain, crowd, indoor hum (AC/fan), TV/music, sirens, machinery, phone ringing, mic rustle/clothing, echoes
+Noise characteristics:
+SNR estimate (low/medium/high bins or numeric)
+Stationary vs non-stationary noise
+Sudden transient spikes (door slam, horn, mic hit)
+Reverberation / room effects:
+Echo / reverb level (none/low/medium/high)
+Room type (open outdoor / small room / hallway / vehicle cabin)
+Mic handling artifacts:
+Rustling, occlusion (covered mic), breath pops, plosives
+“Speech masked by noise” segments (timestamps + severity)
