@@ -33,6 +33,7 @@ https://github.com/microsoft/MS-SNSD                                            
 https://www.twine.net/blog/100-audio-and-video-datasets/                              NO
 
 https://bjs.ojp.gov/content/pub/pdf/bwclea16.pdf                                                   YES
+https://www.icpsr.umich.edu/web/NACJD/studies/37302/datadocumentation#
 
 https://journals.sagepub.com/doi/pdf/10.1177/23794607241308636                                     YES - Methodoly
 
