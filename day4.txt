@@ -1,1 +1,42 @@
 https://docs.google.com/document/d/1pvPZ_pYDvu2Q0K0LGWpyMKNVXiSNLfUqGQ5Ku726GHg/edit?usp=drivesdk
+
+https://arxiv.org/html/2406.04927v3
+
+https://huggingface.co/bklynhlth/WillisDiarize-v1
+
+https://arxiv.org/pdf/2310.06825
+
+https://github.com/mistralai/mistral-src
+
+SD is a compononent of ASR tools:
+[3] Speech to text- Amazon Transcribe- AWS, 2024. URL: https://aws.amazon.com/transcribe/
+[4] Speech to Text– Audio to text Translation — MicrosoftAzure, 2024. URL: https://azure.microsoft.com/en-us/products/ai-services/speech-to-text
+
+Diarization accuracy is impacted by several factors:
+[7] O. R. Khazaleh, L. A. Khrais, An investigation into the reliability of speaker recognition schemes: analysing the impact of environmental factors utilising deep learning techniques, Journal of Engineer ing and Applied Science 71 (2024). URL: https://doi.org/10.1186/s44147-023-00351-0
+[8] K. W. Godin, J. H. L. Hansen, Physical task stress and speaker variability in voice quality, EURASIP Journal on Audio, Speech and Music Processing 2015 (2015). URL: https://doi.org/10.1186/s13636-015-0072-7
+[9] D. Charlet, C. Barras, J. Li´enard, Impact of overlapping speech detection on speaker diarization for broadcast news and debates, 2013 IEEEInternational Conference on Acoustics, Speech and Signal Processing (2013). URL: https://doi.org/10.1109/icassp.2013.6639163
+
+Several existing diarization methods:
+[11] L. Serafini, S. Cornell, G. Morrone, E. Zovato, A. Brutti, S. Squartini, An experimental review of speaker diarization methods with application to two-speaker conversational telephone speech recordings, Computer speech & language 82 (2023) 101534. URL: https://doi.org/10.1016/j.csl.2023.101534
+[13] H. Bredin, R. Yin, J. M. Coria, G. Gelly, P. Korshunov, M. Lavechin, D. Fustes, H. Titeux, W. Bouaziz, M.-P. Gill, Pyannote.Audio: Neural Building Blocks for Speaker Diarization, ICASSP 2020- 2020 IEEEInternational Conference on Acoustics, Speech and Signal Processing (ICASSP) (2020). URL: https://arxiv.org/pdf/1911.01255
+[32] T. J. Park, N. R. Koluguri, J. Balam, B. Ginsburg, **Multi scale Speaker Diarization with Dynamic Scale Weighting**, Inter speech 2022 (2022). URL: https://doi.org/10.21437/interspeech.2022-991
+
+Clustering based, X vector approach:
+[12] D. Snyder, D. Garcia-Romero, G. Sell, D. Povey, S. Khudanpur, X Vectors: robust DNN embeddings for speaker recognition, ICASSP 2018 (2018). URL: https://doi.org/10.1109/icassp.2018.8461375
+
+End-to-End Neural Diarization (EEND):
+[20] Y. Fujita, N. Kanda, S. Horiguchi, K. Nagamatsu, S. Watanabe, End-to-End Neural Speaker Diarization with Permutation-Free Objectives, Interspeech 2019 (2019). URL: https://doi.org/10.21437/interspeech.2019-2899
+[14] Y. Fujita, N. Kanda, S. Horiguchi, Y. Xue, K. Nagamatsu, S. Watanabe, End-to-End Neural Speaker Diarization with Self-Attention, 2019 IEEE Automatic Speech Recognition and Understanding Workshop (ASRU) (2019). URL: https://doi.org/10.1109/asru46091.2019.9003959
+
+LLMs to improve speaker diarization:
+Important: [27] Q. Wang, Y. Huang, G. Zhao, E. Clark, W. Xia, H. Liao, DiarizationLM: Speaker Diarization Post-Processing with Large Language Models, arXiv (Cornell University) (2024). URL: https://arxiv.org/abs/2401.03506
+[31] T. J. Park, K. Dhawan, N. Koluguri, J. Balam, Enhancing Speaker Diarization with Large Language Models: A Contextual Beam Search Approach, ICASSP 2024- 2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) (2024). URL: https://doi.org/10.1109/icassp48485.2024.10446204
+[33] A. Adedeji, S. Joshi, B. Doohan, The Sound of Healthcare: Improving Medical Transcription ASR Accuracy with Large Language Models, arXiv (Cornell University) (2024). URL: https://arxiv.org/abs/2402.07658
+
+
+Actual Model and other links:
+*This model has been published on HuggingFace and is available at https://huggingface.co/bklynhlth/WillisDiarize-v1
+*a Python library for digital measurement of health, that can be found at https://github.com/bklynhlth/openwillis
+*Code for all data, training and evaluation methods can be found at https://github.com/GeorgeEfstathiadis/LLM-Diarize-ASR-Agnostic
+*The exact template for fine-tuning prompt and completion template can be found in https://github.com/GeorgeEfstathiadis/LLM-Diarize-ASR-Agnostic
