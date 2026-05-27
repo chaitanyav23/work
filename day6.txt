@@ -1,1 +1,3 @@
 https://github.com/haoheliu/voicefixer
+
+Before laying out the pipeline, I read Bain et al. (2023), Efstathiadis et al. (2025), Wang et al. (2024) and Whisper by OpenAI, and used them as a foundation for my framework
