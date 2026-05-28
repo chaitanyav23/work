@@ -1,0 +1,70 @@
+Objective: Perform root-cause analysis of diarization errors instead of reporting aggregate DER alone.
+
+1. Export all diarization error regions from evaluation:
+   
+   - MISS (speech not detected)
+   - FALSE_ALARM (non-speech detected as speech)
+   - CONFUSION (speech assigned to wrong speaker)
+
+2. Save each error as:
+   start_time, end_time, error_type
+
+3. Extract ±2 seconds of context around every error region.
+
+4. For a representative sample (e.g., 50 MISS + 50 FALSE_ALARM + 50 CONFUSION), manually inspect and assign one or more root-cause labels:
+   
+   MISS:
+   
+   - Far-field speech
+   - Low volume
+   - Noise masking
+   - Overlap
+   - Emotional speech
+   - Reverberation
+   - Accent / pronunciation
+   - Other
+   
+   FALSE_ALARM:
+   
+   - Radio chatter
+   - Crowd speech
+   - TV/music
+   - Traffic/engine noise
+   - Reverberation tail
+   - Wind
+   - Other
+   
+   CONFUSION:
+   
+   - Overlap
+   - Similar voices
+   - Rapid turn-taking
+   - Background speakers
+   - Far-field speech
+   - Other
+
+5. Aggregate statistics:
+   
+   - Count errors by root cause
+   - Compute percentage contribution of each cause
+
+6. Map results to benchmark features:
+   
+   - SNR
+   - Distance (near/far)
+   - Overlap severity
+   - Reverberation level
+   - Environment type
+   - Emotional state
+   - Noise type
+
+7. Produce condition-specific metrics:
+   
+   - WER(condition)
+   - DER(condition)
+   - Miss Rate(condition)
+   - False Alarm(condition)
+   - Confusion(condition)
+   - WDER(condition)
+
+Goal: Determine why errors occur, identify dominant failure modes, and quantify which operational conditions contribute most to ASR and diarization degradation.This single exercise will likely give you more insight into the next iteration of the pipeline than weeks of blind hyperparameter tuning.
