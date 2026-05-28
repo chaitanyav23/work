@@ -222,3 +222,111 @@ bwc,0.3037,0.4646,0.2748,0.4699,0,0.1661,-0.0289,0.1358,0.1746,5
 
 ---
 
+Here is the end-to-end forensic breakdown of every logic, algorithm, and stage in that pipeline.
+
+  Phase 1: Grounded Ingestion
+  Goal: Define the "Safe Zones" for intelligence extraction.
+   * Logic: Instead of letting the ASR or Diarizer "search" for speech, we provide them with a Ground Truth Map.
+   * The Input: Raw BWC audio + a VAD JSON containing exact start and end timestamps of speech segments.
+   * Operational Value: This ensures that downstream models are forced to process every word an officer says, even if there is a siren
+     blaring at the same time. This is why our Deletions dropped from 71 to 43.
+
+  Phase 2: Grounded Diarization (The "Muting" Trick)
+  Goal: Achieve high-precision Speaker ID in noisy environments.
+   * Algorithm: Pyannote 3.1 (State-of-the-Art Neural Diarization).
+   * The Logic (Muting): This is our custom innovation. Before the audio hits the Pyannote model, we apply a Binary Mask.
+       * Any audio outside our VAD Safe Zones is replaced with absolute silence (zeros).
+       * Any audio inside the zones remains untouched.
+   * Why it works: Neural models like Pyannote 3.1 are "too smart"—they try to find speaker features in the sound of a door slamming or
+     radio static. By muting the noise, we allow the model's Speaker Embedding Engine to focus exclusively on human vocal cords.
+   * Result: This stage achieved the Confusion Score.
+
+  Phase 3: Hardened ASR (Manual Slicing)
+  Goal: Transcription without "Hallucination Poisoning."
+   * Engine: Whisper large-v3 (via the Faster-Whisper/CTranslate2 optimized engine).
+   * Algorithm: Isolated Manual Slicing.
+       * The script cuts the audio into discrete slices (e.g., 2.5 seconds) based on the VAD grounding.
+       * Each slice is sent to Whisper as a completely independent task.
+   * Logic (No Conditioning): We explicitly set condition_on_previous_text=False. 
+       * Standard Whisper "remembers" the previous sentence. In BWC, if the model mishears "Static" as "The suspect has a gun," it will
+         try to make the next sentence consistent with that mistake. 
+       * By disabling conditioning, we ensure every segment is a fresh start, preventing a single loud noise from poisoning the entire
+         transcript.
+
+  Phase 4: Forced Phoneme Alignment
+  Goal: Sync every word to a millisecond-accurate timestamp.
+   * Algorithm: Wav2Vec2 Alignment.
+   * Logic: Whisper produces text, but its timestamps are often "fuzzy." We use a second model (Wav2Vec2) that doesn't care about the
+     meaning of words, only the sound of letters (phonemes).
+   * The Process: It takes our transcript (e.g., "Get back!") and "forces" the phonemes ('G'-'E'-'T') to match the peaks in the acoustic
+     waveform. 
+   * Outcome: Every word is now pinned to a precise start and end time.
+
+  Phase 5: Speaker-Word Attribution
+  Goal: Assigning the final "Who Spoke What" labels.
+   * Algorithm: Interval Tree Intersection.
+   * Logic: We now have two data streams:
+       1. Diarization: "Speaker 0 speaks from 10.0s to 12.0s."
+       2. Aligned Words: "The word 'Stop' occurs at 11.5s."
+   * The Process: The pipeline performs a Temporal Join. It checks which speaker's time-window has the most overlap with each specific
+     word's time-window.
+   * Outcome: The label SPEAKER_00 is attached to the word "Stop."
+
+  Phase 6: Intelligence Output
+  Goal: Final forensic delivery.
+   * Formatters: The script generates two files.
+       * JSON: A structured machine-readable timeline used for "delta" metric analysis.
+       * TXT: A human-readable review transcript with 2-decimal timestamps and clear speaker tags.
+
+  Summary of the "Hardened" Advantage
+  The magic of this pipeline isn't the models (Whisper/Pyannote)—it's the Isolation Logic. By muting the noise for the diarizer and
+  slicing the audio for the transcriber, we successfully navigated the "High-Entropy" environment of a Body-Worn Camera to produce a
+  forensically accurate transcript.
+
+---
+
+  The Three-Stage VAD Refinement Logic
+
+  1. Binarization (Detection)
+   * The Problem: VAD models (like Silero) produce a "probability curve" (e.g., 0.8 likely speech, 0.2 likely silence).
+   * The Algorithm: The script converts this curve into a Binary Mask using thresholds.
+       * Onset (0.3): If the probability goes above 0.3, speech has started.
+       * Offset (0.25): If it falls below 0.25, speech has ended.
+   * Outcome: We get a raw list of speech segments, but they are often too long or too short for the ASR model.
+
+  2. The "Min-Cut" Operation (Splitting)
+   * The Problem: Whisper models perform best on 30-second audio chunks. If an officer talks for 3 minutes without a break, feeding that
+     entire 180-second chunk into the model causes it to "hallucinate" or skip words at the end.
+   * The Algorithm: If a segment is longer than 30 seconds, the script looks for the mathematically quietest point (minimum voice
+     activation score) between 15s and 30s. 
+   * The "Cut": It "snaps" the segment at that exact point of lowest speech energy.
+   * Outcome: We split long rants into manageable chunks at the most natural pauses possible.
+
+  3. The "Merge" Operation (Joining)
+   * The Problem: Very short segments (e.g., someone just saying "Yeah") lack the acoustic context Whisper needs to be accurate. Multiple
+     tiny segments also slow down processing because the model has to "re-warm" its memory for every new task.
+   * The Algorithm: The script loops through the segments chronologically. If it sees two segments that, when combined, last less than 28
+     seconds, it merges them into one single grounded segment.
+   * Outcome: We group short phrases together into "Conversational Chunks." 
+
+  ---
+
+  Why this is critical for BWC Intelligence
+  In a Body-Worn Camera scenario, speech is erratic. 
+   * Min-Cut ensures that if an officer is reading someone their rights for 2 minutes, the transcript is broken into 30-second pieces so
+     the AI doesn't get overwhelmed and start hallucinating.
+   * Merge ensures that if an officer and a suspect are having a rapid back-and-forth exchange ("Stop!" "Why?" "Hands!"), all those
+     shouts are grouped into one 28-second "Safe Zone." This gives the model enough context to understand the tone and intent of the
+     exchange.
+
+  Summary Table of Refinement
+
+  ┌─────────┬───────────┬───────────────────────┬────────────────────────────────┐
+  │ Stage   │ Operation │ Logic                 │ Operational Goal               │
+  ├─────────┼───────────┼───────────────────────┼────────────────────────────────┤
+  │ Stage 1 │ Binarize  │ Probability $> 0.3$   │ Distinguish signal from noise. │
+  │ Stage 2 │ Min-Cut   │ argmin(scores) at 30s │ Prevent ASR memory overflow.   │
+  │ Stage 3 │ Merge     │ aggregate ≤ 28s       │ Maximize acoustic context.     │
+  └─────────┴───────────┴───────────────────────┴────────────────────────────────┘
+
+  This refined VAD output is what is stored in vad_custom_grounding/ and used as the "Master Map" for your hardened pipeline.
