@@ -68,3 +68,53 @@ Objective: Perform root-cause analysis of diarization errors instead of reportin
    - WDER(condition)
 
 Goal: Determine why errors occur, identify dominant failure modes, and quantify which operational conditions contribute most to ASR and diarization degradation.This single exercise will likely give you more insight into the next iteration of the pipeline than weeks of blind hyperparameter tuning.
+
+
+---
+
+Use this as your implementation prompt:
+
+Objective: Evaluate whether preprocessing improves the BWC pipeline without degrading current baseline performance.
+
+Baseline (Pipeline A):
+Raw Audio → Grounded VAD → Muted Pyannote 3.1 → WhisperX → Alignment → Speaker Attribution
+
+Requirements:
+
+1. Create a preprocessing script that accepts CLI arguments.
+2. Support:
+   - Loudness normalization (enabled/disabled)
+   - Mild bandpass filter (configurable low/high cutoff, e.g. 80–8000 Hz)
+3. Preserve sample rate, duration, channels, timestamps, and filenames.
+4. Generate separate output directories:
+   - preprocessed_B_normalized/
+   - preprocessed_C_normalized_bandpass/
+5. Pipeline B:
+   Raw Audio → Normalization
+6. Pipeline C:
+   Raw Audio → Normalization → Mild Bandpass
+7. Do NOT modify original audio files.
+8. Save logs/metadata for every processed file:
+   - input path
+   - output path
+   - gain applied
+   - bandpass parameters
+9. After preprocessing, I will independently generate Grounded VAD segments and run the existing hardened pipeline unchanged.
+10. Design the script to support future preprocessing modules (noise reduction, dereverb, etc.) through CLI flags.
+
+Evaluation Goal:
+Compare Pipeline A (baseline), Pipeline B, and Pipeline C on:
+
+- WER
+- SA-WER
+- WDER
+- DER
+- Miss Rate
+- False Alarm Rate
+- Confusion
+- Precision
+- Recall
+- F1
+
+Success Criterion:
+Preprocessing should improve speech recall/robustness (especially Miss Rate and downstream metrics) while ensuring no meaningful degradation in overall conversational intelligence metrics relative to Pipeline A.
