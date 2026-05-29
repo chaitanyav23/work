@@ -512,3 +512,45 @@ Use evidence from metrics and error analysis rather than assumptions.This prompt
 
 ---
 
+  Pipeline BWC (Noisy Body-Cam)
+
+  ┌────────────────┬──────────────┬───────────────────┬───────┐
+  │ Pipeline       │ Before (Raw) │ After (Processed) │ Delta │
+  ├────────────────┼──────────────┼───────────────────┼───────┤
+  │ A (Baseline)   │ 9.07 dB      │ 9.07 dB           │ 0.00  │
+  │ B (Normalized) │ 8.10 dB      │ 8.10 dB           │ 0.00  │
+  │ C (Bandpass)   │ 7.99 dB      │ 8.02 dB           │ +0.03 │
+  └────────────────┴──────────────┴───────────────────┴───────┘
+  Pipeline Podcast (Clean)
+
+  ┌────────────────┬──────────────┬───────────────────┬───────┐
+  │ Pipeline       │ Before (Raw) │ After (Processed) │ Delta │
+  ├────────────────┼──────────────┼───────────────────┼───────┤
+  │ A (Baseline)   │ 17.99 dB     │ 17.99 dB          │ 0.00  │
+  │ B (Normalized) │ 18.02 dB     │ 18.02 dB          │ 0.00  │
+  │ C (Bandpass)   │ 17.86 dB     │ 18.69 dB          │ +0.83 │
+  └────────────────┴──────────────┴───────────────────┴───────┘
+  ---
+
+  Crucial Observations
+
+   1. Normalization (B) is SNR-Neutral:
+       * As expected mathematically, Loudness Normalization does not change the SNR. It boosts the signal and the noise floor by the
+         exact same amount.
+       * Why did DER improve then? Because while the SNR (ratio) stayed the same, the absolute level of the speech became consistent.
+         Pyannote's clustering is more sensitive to the absolute spectral profile than it is to the ratio, so making everyone equally
+         loud helped it cluster speakers better, even if the noise was also louder.
+
+   2. Bandpass (C) creates a false positive SNR boost:
+       * In the Podcast, the SNR improved by +0.83 dB. This is a real improvement—it cut out silence-hiss.
+       * In the BWC, it only improved by +0.03 dB. This tiny change confirms that the noise is "in-band" (overlaps with human voice
+         frequencies). You cannot filter it out without also filtering the voice.
+
+   3. Why "Before" SNR varies between Pipelines:
+       * You'll notice the "Before" SNR for BWC is lower in Pipeline C (7.99 dB) than in Pipeline A (9.07 dB).
+       * This is because the VAD in Pipeline C was less accurate. It included more "junk" in its signal segments. When the VAD includes
+         noise as "signal," it mathematically lowers the calculated SNR.
+       * Conclusion: Preprocessing (especially filtering) is actually confusing our VAD, causing it to grab more noise and call it
+         speech. This is why Pipeline C had the highest error rates.
+
+-------------
