@@ -118,3 +118,80 @@ Compare Pipeline A (baseline), Pipeline B, and Pipeline C on:
 
 Success Criterion:
 Preprocessing should improve speech recall/robustness (especially Miss Rate and downstream metrics) while ensuring no meaningful degradation in overall conversational intelligence metrics relative to Pipeline A.
+
+----------
+
+
+  1. The Major Bottleneck: Acoustic Environment (BWC)
+  The primary bottleneck is the body-worn camera (BWC) audio quality. 
+   * ASR Bottleneck: In high-quality audio (podcast), the bottleneck is Deletions (the model misses quiet words). In BWC audio, the
+     bottleneck shifts to Substitutions (68 substitutions vs 48 deletions). This means Whisper is hearing the speech but misinterpreting
+     the words due to noise, clothing rustle, and background interference.
+   * Diarization Bottleneck: The Miss Rate and False Alarm Rate are both extremely high (~17-18%). This indicates that VAD is struggling
+     to distinguish between speech and non-speech events in the noisy BWC environment.
+
+  ---
+
+  2. Metric Breakdown for BWC Pipeline
+
+  ┌────────────────┬────────────────────────┬─────────────────────────┬────────┬────────┐
+  │ Pipeline       │ WER Components (S/D/I) │ DER Components (M/FA/C) │ WDER   │ SA-WER │
+  ├────────────────┼────────────────────────┼─────────────────────────┼────────┼────────┤
+  │ A (Baseline)   │ 68 / 48 / 31           │ 0.178 / 0.174 / 0.111   │ 0.1364 │ 0.4401 │
+  │ B (Normalized) │ 67 / 50 / 32           │ 0.195 / 0.178 / 0.069   │ 0.1033 │ 0.4112 │
+  │ C (Bandpass)   │ 71 / 57 / 33           │ 0.191 / 0.205 / 0.120   │ 0.1612 │ 0.4938 │
+  └────────────────┴────────────────────────┴─────────────────────────┴────────┴────────┘
+
+   * WER (S/D/I): Substitutions / Deletions / Insertions.
+   * DER (M/FA/C): Miss Rate / False Alarm Rate / Speaker Confusion.
+
+  ---
+
+  3. Understanding SA-WER and WDER
+
+  These metrics represent the interaction between transcription and diarization.
+
+  WDER (Word Diarization Error Rate)
+   * What it measures: The percentage of correctly transcribed words that were assigned to the wrong speaker.
+   * Impact: In Pipeline B, WDER is 0.1033. This means that out of every 100 words Whisper got right, 10 of them were given to the wrong
+     person in the transcript.
+   * Bottleneck: This is purely a diarization clustering failure. Pipeline B (Normalization) is the best here because it reduced this
+     error significantly compared to Baseline.
+
+  SA-WER (Speaker-Attributed WER)
+   * What it measures: The total error rate of the conversation timeline.
+   * Formula: SA-WER = Base WER + WDER.
+   * Interpretation: A word is only "Perfect" if both the text and the speaker are correct.
+   * Comparison: Pipeline B has an SA-WER of 41.12%. This is the most accurate reflection of the "end-user experience"—out of all words
+     spoken, about 41% are either wrong text or wrong speaker.
+
+  ---
+
+  4. Summary for the Three Pipelines (BWC Only)
+
+   1. Baseline (A): Solid foundation, but high Speaker Confusion (11.1%) leading to a 44% total error rate.
+   2. Normalized (B) [Winner]: Preprocessing successfully stabilized the audio energy. It didn't significantly help the ASR (WER is
+      similar), but it fixed the speaker clustering. It reduced Speaker Confusion from 11% to 6.9%, leading to the lowest overall error
+      rate (41%).
+   3. Bandpass (C) [Failure]: The filter was too aggressive for BWC audio. It increased Insertions and False Alarms, as the model
+      interpreted filtered noise as speech. It resulted in the highest error rate (49%).
+-------------
+
+My observations:
+
+  1. Why WER (ASR) isn't improving:
+  Whisper (the model we are using) is already trained on massive amounts of noisy data. It has its own internal "normalization" and
+  "filtering." 
+   * The Issue: The errors in the BWC footage are mostly Substitutions. This happens when the signal-to-noise ratio (SNR) is so low that
+     the speech is physically masked by noise (e.g., a siren or wind). 
+   * The Limit: Simply making the audio louder (Normalization) or cutting frequencies (Bandpass) doesn't "reveal" the hidden speech; it
+     just makes the noise louder or cuts out the high-frequency consonants Whisper needs for clarity.
+
+  2. Why Miss/FA (Diarization) isn't improving:
+  These rates are determined by Voice Activity Detection (VAD). 
+   * Miss Rate (17-19%): The VAD is ignoring speech that is too quiet or too buried in noise. Normalization helps a little, but if the
+     noise floor rises with the speech, the VAD still can't "see" the voice.
+   * False Alarm Rate (17-20%): The BWC environment is full of "speech-like" non-speech sounds: rhythmic clothing rustle, static, and
+     distant sirens. Our current VAD is mistaking these for human voices.
+
+-----------
