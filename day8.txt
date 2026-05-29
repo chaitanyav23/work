@@ -195,3 +195,320 @@ My observations:
      distant sirens. Our current VAD is mistaking these for human voices.
 
 -----------
+
+Since you're using Gemini CLI as a research/development assistant, the prompt should not ask it to merely "implement X". It should force it into a scientific experimental workflow:
+
+Understand the current architecture.
+
+Preserve the baseline.
+
+Implement changes in isolation.
+
+Produce measurable results.
+
+Generate reports comparing against Pipeline B.
+
+
+Below is the prompt I would use.
+
+TASK: Experimental Improvements to Hardened BWC Conversational Intelligence Pipeline
+
+You are working on an existing production-grade Body-Worn Camera (BWC) Conversational Intelligence Pipeline.
+
+IMPORTANT CONTEXT
+
+Current best-performing pipeline:
+
+Raw Audio
+→ Grounded VAD (Silero + Split/Merge Logic)
+→ Muted Diarization (Pyannote 3.1)
+→ Manual Slice ASR (WhisperX Large-v3)
+→ Word Alignment
+→ Speaker Attribution
+→ Final Intelligence Output
+
+Current benchmark results:
+
+Pipeline B (Normalization Only)
+
+WER Components:
+
+- Substitutions: 67
+- Deletions: 50
+- Insertions: 32
+
+DER Components:
+
+- Miss Rate: 19.5%
+- False Alarm Rate: 17.8%
+- Speaker Confusion: 6.9%
+
+Final Metrics:
+
+- WDER = 10.33%
+- SA-WER = 41.12%
+
+This pipeline MUST remain untouched and serve as the baseline.
+
+Never overwrite baseline code.
+
+Create separate experimental branches/modules.
+
+The objective is to determine whether VAD, speech enhancement, or diarization architecture is the dominant remaining bottleneck.
+
+---
+
+PHASE 1: VAD BENCHMARKING STUDY
+
+Objective
+
+Determine whether the current Silero-based Grounded VAD is responsible for the high Miss Rate and False Alarm Rate.
+
+Current evidence:
+
+Miss Rate ≈ 18–20%
+False Alarm Rate ≈ 18–20%
+
+These are the largest contributors to DER.
+
+Requirements
+
+Keep EVERYTHING else identical:
+
+- Same grounding logic
+- Same muting trick
+- Same Pyannote 3.1 diarization
+- Same WhisperX ASR
+- Same alignment
+- Same attribution
+
+Only replace the VAD component.
+
+Evaluate
+
+1. Existing Silero VAD (baseline)
+2. Pyannote VAD
+3. NVIDIA NeMo VAD
+4. Any additional modern VAD suitable for noisy BWC environments
+
+Deliverables
+
+Implement:
+
+pipeline_vad_silero.py
+pipeline_vad_pyannote.py
+pipeline_vad_nemo.py
+
+Generate metrics:
+
+- DER
+- Miss Rate
+- False Alarm Rate
+- Speaker Confusion
+- Precision
+- Recall
+- F1
+
+Generate comparison tables and plots.
+
+Provide statistical interpretation of results.
+
+Determine which VAD is best for noisy BWC audio.
+
+---
+
+PHASE 2: SPEECH ENHANCEMENT STUDY
+
+Objective
+
+Reduce Whisper substitutions caused by low-SNR BWC audio.
+
+Current evidence:
+
+Substitutions are the largest WER component.
+
+This suggests speech is being detected but phonetic information is corrupted by noise.
+
+Requirements
+
+Keep the entire pipeline identical.
+
+Insert enhancement BEFORE VAD.
+
+Pipeline becomes:
+
+Raw Audio
+→ Speech Enhancement
+→ Grounded VAD
+→ Muted Diarization
+→ WhisperX
+→ Alignment
+→ Attribution
+
+Evaluate
+
+1. DeepFilterNet 3
+2. Facebook Denoiser
+3. SpeechBrain Enhancement
+4. Any recent enhancement model appropriate for real-world noisy speech
+
+Deliverables
+
+Implement:
+
+pipeline_enhancement_deepfilternet.py
+pipeline_enhancement_denoiser.py
+pipeline_enhancement_speechbrain.py
+
+Generate:
+
+WER breakdown:
+
+- Substitutions
+- Deletions
+- Insertions
+
+Also evaluate:
+
+- SA-WER
+- WDER
+
+Additional Analysis
+
+Compute objective speech quality metrics when possible:
+
+- SNR Improvement
+- SDR
+- PESQ
+- STOI
+
+Determine:
+
+- Which enhancement improves transcription
+- Which enhancement hurts transcription
+- Whether enhancement introduces diarization side effects
+
+Provide a final ranked recommendation.
+
+---
+
+PHASE 3: DIARIZATION ARCHITECTURE STUDY
+
+Objective
+
+Determine whether clustering-based diarization has reached its performance ceiling.
+
+Current pipeline:
+
+Grounded Audio
+→ Pyannote 3.1
+→ Speaker Embeddings
+→ Clustering
+
+Current evidence:
+
+Speaker confusion remains non-trivial.
+
+Need to evaluate overlap-aware neural diarization.
+
+Requirements
+
+Keep:
+
+- Grounded VAD
+- Muting trick
+- WhisperX
+- Alignment
+- Attribution
+
+Replace ONLY the diarization engine.
+
+Evaluate
+
+1. Current Pyannote 3.1 baseline
+2. NVIDIA NeMo MSDD
+3. Any modern overlap-aware diarization system
+
+Deliverables
+
+Implement:
+
+pipeline_pyannote31.py
+pipeline_msdd.py
+
+Evaluate:
+
+- DER
+- Miss Rate
+- False Alarm Rate
+- Confusion
+- WDER
+- SA-WER
+
+Additional Analysis
+
+Estimate:
+
+- Percentage overlap speech
+- Overlap recall
+- Overlap precision
+
+Investigate whether remaining diarization errors originate from:
+
+1. Overlapping speech
+2. Similar speaker embeddings
+3. VAD segmentation failures
+
+Provide a detailed error breakdown.
+
+---
+
+EXPERIMENTAL REQUIREMENTS
+
+For every phase:
+
+1. Preserve baseline implementation.
+2. Use identical evaluation datasets.
+3. Produce reproducible scripts.
+4. Log every run.
+5. Save all metrics in CSV format.
+6. Save plots in PNG format.
+7. Generate a markdown report automatically.
+
+Directory structure:
+
+experiments/
+├── phase1_vad/
+├── phase2_enhancement/
+├── phase3_diarization/
+
+reports/
+├── phase1_report.md
+├── phase2_report.md
+├── phase3_report.md
+
+results/
+├── metrics.csv
+├── plots/
+└── summaries/
+
+---
+
+FINAL GOAL
+
+At the end, produce a final recommendation answering:
+
+1. Is VAD the dominant bottleneck?
+2. Is speech enhancement the dominant bottleneck?
+3. Is clustering-based diarization the dominant bottleneck?
+4. Which modification gives the largest improvement in:
+   - DER
+   - WDER
+   - SA-WER
+   - WER
+5. What should become the new production pipeline?
+
+Use evidence from metrics and error analysis rather than assumptions.This prompt is structured like a mini research plan rather than a coding request. Gemini will be much more likely to generate proper experiment scripts, evaluation harnesses, CSV reports, plots, and ablation studies instead of making ad-hoc code changes.
+
+---
+
