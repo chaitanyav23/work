@@ -554,3 +554,36 @@ Use evidence from metrics and error analysis rather than assumptions.This prompt
          speech. This is why Pipeline C had the highest error rates.
 
 -------------
+
+
+  Final Benchmarking Summary (BWC Only)
+
+  ┌─────────────────┬────────────────────┬───────────────────────────────────────────────────────────────────────┐
+  │ Pipeline Stage  │ Best Performer     │ Impact                                                                │
+  ├─────────────────┼────────────────────┼───────────────────────────────────────────────────────────────────────┤
+  │ VAD (Grounding) │ Pyannote 3.1       │ Reduces Miss Rate from 18% to 11%, improving word recall.             │
+  │ Enhancement     │ None (Raw)         │ Neural enhancement (SpeechBrain) caused WER to spike from 30% to 45%. │
+  │ Normalization   │ -20dB Peak         │ Essential. Reduced Speaker Confusion by 38% and WDER to 10%.          │
+  │ Diarization     │ Muted Pyannote 3.1 │ Remains the most stable architecture for clustering low-SNR audio.    │
+  └─────────────────┴────────────────────┴───────────────────────────────────────────────────────────────────────┘
+
+  Key Discovery: The Enhancement Trap
+  The most critical finding was that neural speech enhancement actually hurts ASR quality for Whisper models on BWC audio. The
+  "processing artifacts" introduced by models like MetricGAN+ are more disruptive to the transformer's attention mechanism than the
+  original environmental noise.
+
+  New Production Recommendation
+  The "Stabilized Grounded Pipeline" should become the new standard:
+   1. Normalization: Apply loudness normalization to stabilize speaker embeddings.
+   2. Pyannote VAD: Use for the grounding phase to maximize coverage (even at the cost of higher False Alarms).
+   3. Muted Diarization: Continue zeroing non-speech audio to prevent "background chatter" from polluting speaker clusters.
+   4. Raw ASR: Feed normalized, but otherwise unenhanced, audio to WhisperX.
+
+  Study Artifacts
+   - Detailed Reports: reports/phase1_report.md, reports/phase2_report.md, and reports/final_recommendation.md.
+   - Metrics Data: All raw CSVs are available in the reports/ and results/ folders.
+   - Reproducible Code: All benchmarking scripts are stored in experiments/phase1_vad/, experiments/phase2_enhancement/, and
+     experiments/phase3_diarization/.
+
+
+----------
