@@ -1336,5 +1336,50 @@ Only proceed to full reruns after the audit is complete and the MSDD pipeline is
 
   Would you like me to implement the "Oracle VAD" modification for MSDD and then re-trigger the Stage 1-6 validation for the BWC file?
 
---
+---
+
+Yes. Measure runtime before and after Oracle VAD.
+
+Implement the Oracle VAD modification.
+
+The goal is for MSDD to use the existing Phase 4 master grounding rather than running MarbleNet VAD again.
+
+Please:
+
+1. Convert grounding_master/*.json into the format required by NeMo Oracle VAD (RTTM if necessary).
+
+2. Modify pipeline_msdd.py so that:
+   - oracle_vad=True
+   - Master grounding is used as the VAD source.
+   - MarbleNet VAD is bypassed.
+
+3. Run validation on bwc.wav only.
+
+4. Report timing for:
+   - RTTM generation
+   - JSON conversion
+   - Hardened ASR merge
+   - Evaluation
+   - Diagnostics
+
+5. Verify that pred_rttms/bwc.rttm is actually generated before proceeding further.
+
+6. If RTTM generation succeeds, complete the full MSDD pipeline and provide:
+   - DER
+   - Miss
+   - False Alarm
+   - Confusion
+   - Predicted Speaker Count
+
+7. Compare directly against:
+   - Pyannote Auto
+   - Pyannote Fixed-2
+
+Do not rerun normalization.
+Do not rerun master grounding.
+Do not rerun Phase 4.
+
+Focus exclusively on making MSDD use the existing shared grounding and obtaining a valid end-to-end Phase 5 result on bwc.wav
+
+---
 
