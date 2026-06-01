@@ -595,3 +595,71 @@ Before proceeding, please summarize:
 for each diarization model.
 
 ---
+
+Here is the summary of the work completed and the current state of Phases 4 and 5.
+
+  1. Directory Structure
+  Consistent with the requested pattern, the following structure was implemented:
+
+    1 experiments/
+    2 ├── phase4_grounded_enhancement/
+    3 │   ├── audio_normalized/       # -20dB Peak Normalized full waveforms
+    4 │   ├── audio_speechbrain/      # Enhanced Normalized waveforms
+    5 │   ├── audio_deepfilternet/    # Enhanced Normalized waveforms (CPU fallback)
+    6 │   ├── grounding_master/       # Shared Pyannote 3.1 VAD JSONs
+    7 │   ├── outputs_baseline/       # Hardened Pipeline results (Normalized only)
+    8 │   ├── outputs_speechbrain/    # Hardened Pipeline results (Enhanced SB)
+    9 │   └── outputs_deepfilternet/  # Hardened Pipeline results (Enhanced DFN)
+   10 └── phase5_grounded_diarization/
+   11     ├── outputs_pyannote31/     # Results using baseline diarizer
+   12     ├── outputs_msdd/           # Results using custom MSDD integration
+   13     ├── diar_msdd_raw/          # Raw NeMo MSDD segments
+   14     └── diagnostics_pyannote31/ # Error audio clips and metadata
+
+  2. Grounded Audio Representation
+  Representation: (a) Masked full-length waveform.
+  The system uses the "Muting Trick" within run_final_hardened_pipeline.py. It zeroes out non-speech regions based on the Master
+  Grounding while maintaining the original file duration and word-to-audio sync.
+
+  3. Phase 4 Evaluation Status (Enhancement)
+  Complete for all three variants.
+
+  BWC Final Metrics (Grounded/Normalized):
+  ┌────────┬──────────┬────────────────┬─────────────┐
+  │ Metric │ Baseline │ DeepFilterNet3 │ SpeechBrain │
+  ├────────┼──────────┼────────────────┼─────────────┤
+  │ WER    │ 0.2975   │ 0.3698         │ 0.4793      │
+  │ Subs   │ 86       │ 76             │ 77          │
+  │ Dels   │ 32       │ 86             │ 141         │
+  │ Ins    │ 26       │ 17             │ 14          │
+  │ DER    │ 0.4114   │ 0.4408         │ 0.5481      │
+  └────────┴──────────┴────────────────┴─────────────┘
+
+  Observation: Baseline Normalized audio still outperforms neural enhancement for WER. However, DeepFilterNet3 reduced substitutions
+  compared to the baseline, suggesting it helps clarity but introduces deletions due to over-aggressive noise removal.
+
+  4. Phase 5 Evaluation Status (Diarization)
+   * Pyannote 3.1: Complete.
+   * NeMo MSDD: Partial. The MSDD segment generation is successful, but the final merging into the Hardened Pipeline is pending the full
+     GPU processing of the podcast file (which is significantly longer than bwc).
+
+  5. Diarization Diagnostic Counts (Pyannote 3.1)
+  Diagnostic clips were extracted for regions of interest. (Note: These are unique time-region counts, capped at 10 clips per type for
+  file management).
+
+  ┌──────────────┬──────────────┬─────────────────────┬───────────────────┐
+  │ Model        │ Miss Regions │ False Alarm Regions │ Confusion Regions │
+  ├──────────────┼──────────────┼─────────────────────┼───────────────────┤
+  │ Pyannote 3.1 │ 10           │ 10                  │ 10                │
+  │ MSDD         │ Pending      │ Pending             │ Pending           │
+  └──────────────┴──────────────┴─────────────────────┴───────────────────┘
+
+  6. Detailed Diarization Analysis (BWC - Pyannote 3.1)
+   * Total Speech Time: 119.0s
+   * Miss Time: 15.7s (Speech not assigned to any speaker)
+   * FA Time: 30.5s (Speaker assigned to silence)
+   * Confusion Time: 103.3s (Wrong speaker assigned)
+   * Speaker Count: Ref: 4 | Pred: 1 (Significant under-clustering detected)
+
+---
+
