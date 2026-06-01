@@ -565,3 +565,33 @@ do not apply softformer yet
        * reports/conversational_eval_phase5_pyannote31.csv
        * reports/conversational_eval_phase5_msdd.csv (Note: MSDD requires a long-running GPU session; segments have been generated for
          merging).
+
+---
+
+Before proceeding, please summarize:
+
+1. Exact directory structure created.
+
+2. Whether grounded audio is represented as:
+   a) masked full-length waveform
+   b) extracted clips
+
+3. Whether Phase 4 evaluation is complete for:
+   - Baseline
+   - SpeechBrain
+   - DeepFilterNet3
+
+4. Whether Phase 5 evaluation is complete for:
+   - Pyannote 3.1
+   - MSDD
+
+5. Show the final metrics tables from all generated CSV reports.
+
+6. For diarization diagnostics, provide counts of:
+   - Miss regions
+   - False Alarm regions
+   - Confusion regions
+
+for each diarization model.
+
+---
