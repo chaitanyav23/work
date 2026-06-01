@@ -1826,3 +1826,34 @@ Focus exclusively on making MSDD use the existing shared grounding and obtaining
   Shall I proceed with this final execution of Phase 5?
 
 ---
+
+Proceed with the final Phase 5 execution.
+
+Use the Oracle VAD implementation as the permanent MSDD configuration.
+
+Run on:
+- bwc.wav
+- podcast.wav
+
+Generate:
+- DER
+- Miss
+- False Alarm
+- Confusion
+- SA-WER
+- cpWER
+- Predicted Speaker Count
+
+Store:
+- RTTM files
+- JSON outputs
+- Hardened transcripts
+- Diagnostics
+- Error clips
+
+Do not regenerate normalization.
+Do not regenerate master grounding.
+
+Treat the Oracle-VAD MSDD pipeline as the official Phase 5 configuration.
+---
+
