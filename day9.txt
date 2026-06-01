@@ -862,3 +862,105 @@ Mon Jun  1 14:08:05 2026
 
 ---
 
+Phase 5 needs to be revisited before we draw any conclusions. Do NOT regenerate normalization or master grounding. Reuse the existing artifacts.
+
+Keep unchanged:
+
+* experiments/phase4_grounded_enhancement/audio_normalized/
+* experiments/phase4_grounded_enhancement/grounding_master/
+
+First perform an audit and verification step before running anything:
+
+1. Ground Truth Verification
+
+* Inspect ground_truth/parsed/bwc.json.
+* Report:
+
+  * Unique speaker labels.
+  * Number of segments per speaker.
+  * Total speaking time per speaker.
+* Verify whether the reported "Reference Speakers = 4" is actually correct.
+* Show a summary table.
+
+2. Pyannote Speaker Count Investigation
+   Run the hardened pipeline on BWC only with:
+
+A) Automatic speaker count (current baseline)
+B) Fixed 2 speakers:
+--min-speakers 2
+--max-speakers 2
+
+Generate a comparison table containing:
+
+* DER
+* Miss
+* False Alarm
+* Confusion
+* Predicted Speaker Count
+
+Determine whether the current high confusion is caused by speaker-count estimation.
+
+3. MSDD Pipeline Validation
+   The previous Phase 5 MSDD run failed before RTTM generation.
+
+Before running the full dataset:
+
+* Run MSDD on bwc.wav only.
+* Verify each stage individually:
+
+Stage 1: RTTM generation
+Stage 2: JSON conversion
+Stage 3: Hardened ASR merge
+Stage 4: Transcript generation
+Stage 5: DER evaluation
+Stage 6: Diagnostics generation
+
+For each stage report:
+
+* COMPLETE
+* FAILED
+* Runtime
+* Output file generated
+
+4. MSDD Configuration Review
+   Review pipeline_msdd.py and determine whether MSDD can use the existing master grounding instead of running its own VAD.
+
+Current concerns:
+
+* oracle_vad=False
+* MSDD is running its own VAD despite Phase 4 creating a shared grounding.
+
+Provide recommendations:
+A) Keep current MSDD design
+B) Use master grounding as oracle VAD
+C) Alternative better approach
+
+Do not implement changes yet; provide analysis first.
+
+5. Phase 5 Rerun Plan
+   After verification, propose the final rerun plan.
+
+Expected comparison set:
+
+Pyannote Auto
+Pyannote Fixed-2
+MSDD
+
+For each report:
+
+* DER
+* Miss
+* False Alarm
+* Confusion
+* Predicted Speaker Count
+* Diagnostic clip counts
+
+Important:
+Do NOT rerun Phase 4.
+Do NOT regenerate normalization.
+Do NOT regenerate master grounding.
+Focus exclusively on validating and repairing Phase 5.
+Only proceed to full reruns after the audit is complete and the MSDD pipeline is confirmed functional on bwc.wav.
+
+---
+
