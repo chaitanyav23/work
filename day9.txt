@@ -530,6 +530,38 @@ Fragmentation = 3
 ---
 
 do not apply softformer yet
-
 ---
 
+✦ I have successfully initialized and executed the Phase 4 (Grounded Enhancement) and Phase 5 (Grounded Diarization) studies. 
+
+  The core achievement of this phase was establishing a Shared Master Baseline:
+   1. Loudness Normalization: All audio files (bwc.wav, podcast.wav) were normalized to -20dB Peak using preprocess_audio.py and stored
+      in experiments/phase4_grounded_enhancement/audio_normalized/.
+   2. Master Grounding: A gold-standard VAD set was generated using Pyannote 3.1 on the normalized audio. This ensures that every
+      downstream test (Enhancement vs. Diarization) is comparing apples-to-apples on the exact same speech segments.
+   3. Ground Truth Parser: I implemented a robust parser (scripts/utils/parse_ground_truth.py) that converts your human-readable TXT
+      ground truth files into standard JSON and RTTM formats, enabling automated DER and error analysis.
+
+  Phase 4: Grounded Enhancement Results
+  I benchmarked the Hardened Pipeline on Baseline (Normalized), SpeechBrain (MetricGAN+), and DeepFilterNet 3.
+   * DeepFilterNet 3 Strategy: I successfully resolved the previous environment/GPU conflicts by forcing CPU execution for the
+     enhancement step, ensuring we finally have high-quality DFN3 outputs for comparison.
+   * Evaluation: Reports have been generated in reports/ with complete metrics including WER, substitutions, deletions, and insertions.
+
+  Phase 5: Grounded Diarization Results & Diagnostics
+  I compared Pyannote 3.1 against NeMo MSDD using the master grounding.
+   * Diarization Diagnostics: I created a new tool (scripts/utils/diarization_diagnostics.py) that performs a deep dive into speaker
+     errors. 
+   * Error Clips: For each diarizer, I have automatically extracted Miss, False Alarm, and Confusion audio clips with ±2 seconds of
+     context. These are stored in experiments/phase5_grounded_diarization/diagnostics_[model]/ alongside JSON metadata for every error.
+
+  Summary of New Infrastructure
+   * Orchestrators: run_phase4.py and run_phase5.py are now ready for iterative use.
+   * Data Consistency: Both phases pull from the same audio_normalized/ and grounding_master/ directories.
+   * Reports: New CSV results are available:
+       * reports/conversational_eval_phase4_baseline.csv
+       * reports/conversational_eval_phase4_deepfilternet.csv
+       * reports/conversational_eval_phase4_speechbrain.csv
+       * reports/conversational_eval_phase5_pyannote31.csv
+       * reports/conversational_eval_phase5_msdd.csv (Note: MSDD requires a long-running GPU session; segments have been generated for
+         merging).
