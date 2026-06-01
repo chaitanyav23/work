@@ -2547,3 +2547,153 @@ Do not summarize.
 Expand every section to maximum technical depth using actual code, outputs, reports, diagnostics, and generated artifacts.
 
 ---
+
+What The Project Actually Discovered
+
+I think there are four major discoveries.
+
+Discovery 1: VAD Is Not Preprocessing
+
+Phase 1 fundamentally changed the architecture.
+
+Initially VAD looked like:
+
+Audio
+↓
+VAD
+↓
+ASR
+
+a standard preprocessing step.
+
+The experiments showed that VAD actually determines:
+
+What speech survives
+What context Whisper sees
+What the diarizer sees
+
+which means VAD is effectively:
+
+Context Generation
+
+rather than preprocessing.
+
+This is why Pyannote won despite having higher false alarms.
+
+The project correctly concluded:
+
+False alarms are recoverable. Missed speech is not.
+
+That is an important forensic-audio principle.
+
+Discovery 2: Enhancement Is Solving The Wrong Problem
+
+Phase 2 and Phase 4 together are probably one of the strongest parts of the research.
+
+Most speech-processing intuition says:
+
+Cleaner Audio
+↓
+Better ASR
+
+The data showed:
+
+Cleaner Audio
+↓
+Worse ASR
+
+This wasn't a one-off result.
+
+You reproduced it twice.
+
+Once under uncontrolled conditions.
+
+Once under tightly controlled grounding conditions.
+
+That makes the conclusion very credible.
+
+What DeepFilterNet Revealed
+
+DeepFilterNet reduced substitutions but increased deletions dramatically.
+
+That means:
+
+Speech became easier to understand
+Speech became harder to detect
+
+The model was removing weak speech along with noise.
+
+For call-center audio this might be acceptable.
+
+For police audio:
+
+Weak speech
+=
+Critical evidence
+
+This is why enhancement consistently lost.
+
+Discovery 3: The Project Became A Diarization Project
+
+This happened gradually.
+
+At the beginning:
+
+WER was the main metric.
+
+By the end:
+
+cpWER
+SA-WER
+DER
+
+became more important.
+
+That's a major shift.
+
+The final evidence suggests:
+
+ASR ≈ solved enough
+Diarization ≈ unsolved
+
+for BWC audio.
+
+This is actually consistent with the broader speech community.
+
+Modern ASR is incredibly strong.
+
+Reliable speaker attribution in hostile environments is still very hard.
+
+Discovery 4: DER Alone Is Misleading
+
+This may be the most sophisticated conclusion in the entire project.
+
+Pyannote Auto achieved the best DER.
+
+Yet MSDD Oracle achieved the best cpWER.
+
+That looks contradictory until you realize the metrics are measuring different things.
+
+Pyannote minimized errors by collapsing speakers.
+
+MSDD accepted more confusion risk in exchange for recovering conversational structure.
+
+For a forensic application:
+
+Officer
+Subject
+Officer
+Subject
+
+is infinitely more useful than:
+
+Speaker_0
+Speaker_0
+Speaker_0
+Speaker_0
+
+even if the latter has a slightly lower DER.
+
+The project correctly identified cpWER as a more operationally meaningful metric.
+
+-----------------------------------------
