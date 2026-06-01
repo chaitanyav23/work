@@ -2492,3 +2492,58 @@ ADDITIONAL REQUIREMENTS
 10. Explain not only WHAT happened, but WHY it happened and HOW it influenced subsequent design decisions.
 
 ----
+
+The report is strong but still reads as a research narrative.
+
+Please revise it into a fully reproducible technical reference manual.
+
+Expand the following:
+
+1. Generate a complete recursive directory tree for all project folders.
+
+2. Document every script individually with:
+   - Purpose
+   - Inputs
+   - Outputs
+   - Arguments
+   - Dependencies
+   - Internal logic
+   - Algorithms used
+   - Role in pipeline
+
+3. Add detailed architecture diagrams for:
+   - Phase 1
+   - Phase 2
+   - Phase 3
+   - Phase 4
+   - Phase 5
+   - Final production pipeline
+
+4. Extract and present all evaluation CSVs in comprehensive tables.
+
+5. Include formulas and worked examples for:
+   - WER
+   - DER
+   - Miss
+   - False Alarm
+   - Confusion
+   - SA-WER
+   - cpWER
+
+6. Expand the MSDD debugging journey into a detailed engineering case study.
+
+7. Quantify all improvements and degradations using absolute and relative percentages.
+
+8. Create a prioritized future-work roadmap with expected impact and implementation difficulty.
+
+9. Assume the report must serve simultaneously as:
+   - Thesis documentation
+   - Research report
+   - Engineering design document
+   - Onboarding guide
+   - Reproducibility manual
+
+Do not summarize.
+Expand every section to maximum technical depth using actual code, outputs, reports, diagnostics, and generated artifacts.
+
+---
