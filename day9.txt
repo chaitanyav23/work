@@ -663,3 +663,20 @@ Here is the summary of the work completed and the current state of Phases 4 and 
 
 ---
 
+Phase 5 reports "pending".
+
+Please tell me exactly which step is incomplete.
+
+For MSDD:
+
+1. Was diarization RTTM generated?
+2. Was JSON generated?
+3. Was speaker-word alignment completed?
+4. Was the hardened transcript generated?
+5. Was DER evaluation completed?
+6. Was diagnostics generation completed?
+
+For each step provide:
+COMPLETE / FAILED / PENDING
+
+---
