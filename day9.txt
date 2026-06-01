@@ -1987,3 +1987,508 @@ Treat the Oracle-VAD MSDD pipeline as the official Phase 5 configuration.
 
 ---
 
+I want you to create a COMPLETE TECHNICAL RESEARCH REPORT for the entire experiments directory, covering every phase from Phase 1 through Phase 5.
+
+This is NOT a summary.
+
+I want a detailed, publication-quality technical report that reconstructs the entire research journey, design decisions, experimental evolution, implementation details, results, analysis, and conclusions.
+
+The report should be written as if a new researcher is joining the project and needs to fully understand:
+
+* Why each experiment was conducted.
+* What problem it was trying to solve.
+* What assumptions motivated it.
+* What limitations were discovered.
+* Why the next phase became necessary.
+* How the final hardened pipeline evolved.
+
+The report must be extremely detailed and should be generated directly from the codebase, experiment scripts, outputs, reports, evaluation files, diagnostics, and generated artifacts.
+
+======================================================================
+SECTION 1 — PROJECT OVERVIEW
+============================
+
+Explain:
+
+* Project objective.
+* Nature of BWC audio.
+* Why BWC audio is difficult.
+* Challenges:
+
+  * low SNR
+  * dynamic speaker distance
+  * wind
+  * sirens
+  * overlapping speech
+  * reverberation
+  * radio chatter
+  * clipping
+  * speaker embedding drift
+
+Explain:
+
+* Why conventional ASR pipelines fail.
+* Why Whisper alone is insufficient.
+* Why diarization is critical.
+* Why attribution matters.
+* Why evaluation must go beyond WER.
+
+Include a high-level architecture diagram of the final system.
+
+======================================================================
+SECTION 2 — COMPLETE DIRECTORY STRUCTURE
+========================================
+
+Generate the full directory tree for:
+
+experiments/
+reports/
+scripts/
+phase outputs
+utilities
+
+Explain every directory.
+
+Explain:
+
+* purpose
+* inputs
+* outputs
+* dependencies
+
+Show relationships between directories.
+
+======================================================================
+SECTION 3 — EVOLUTION OF THE PIPELINE
+=====================================
+
+Create a chronological timeline.
+
+For each phase explain:
+
+1. Initial hypothesis
+2. Problem being solved
+3. Experimental design
+4. Implementation strategy
+5. Evaluation strategy
+6. Results
+7. Limitations discovered
+8. Why the next phase became necessary
+
+Show how the architecture evolved after every phase.
+
+Include architecture diagrams before and after each phase.
+
+======================================================================
+SECTION 4 — PHASE 1 (VAD STUDY)
+===============================
+
+Cover in detail:
+
+* Silero VAD
+* Pyannote VAD
+
+Explain:
+
+* theory
+* implementation
+* grounding generation
+* min-cut strategy
+* chunk merging strategy
+* interaction with Whisper
+
+For every script:
+
+pipeline_vad_silero.py
+pipeline_vad_pyannote.py
+run_phase1.py
+generate_report.py
+
+Document:
+
+* purpose
+* logic
+* algorithm
+* inputs
+* outputs
+* implementation details
+
+Explain every parameter and decision.
+
+Create tables:
+
+* WER
+* DER
+* Miss
+* FA
+* Confusion
+
+Compare results.
+
+Analyze why Pyannote won.
+
+Explain:
+
+"False Alarm is cheap, Miss is fatal"
+
+Explain how Phase 1 changed the project direction.
+
+======================================================================
+SECTION 5 — PHASE 2 (ENHANCEMENT STUDY)
+=======================================
+
+Document:
+
+DeepFilterNet3
+SpeechBrain MetricGAN+
+
+For every script:
+
+pipeline_enhancement_deepfilternet.py
+pipeline_enhancement_speechbrain.py
+run_phase2.py
+generate_report.py
+
+Explain:
+
+* architecture
+* enhancement strategy
+* implementation
+* processing flow
+
+Create full result tables.
+
+Compare:
+
+Baseline
+SpeechBrain
+DeepFilterNet
+
+Explain:
+
+* substitutions
+* deletions
+* insertions
+
+Analyze:
+
+Why enhancement hurt Whisper.
+
+Discuss:
+
+distribution shift
+artifacts
+attention disruption
+phase distortion
+
+Explain why enhancement was rejected.
+
+======================================================================
+SECTION 6 — PHASE 3 (DIARIZATION STUDY)
+=======================================
+
+Document:
+
+Pyannote 3.1
+NeMo MSDD
+
+For every script:
+
+pipeline_msdd.py
+run_hardened_with_custom_diar.py
+run_phase3.py
+
+Explain:
+
+* clustering
+* speaker embeddings
+* TitaNet
+* MSDD
+
+Document:
+
+* inputs
+* outputs
+* logic
+* implementation
+
+Analyze results.
+
+Explain:
+
+speaker drift
+speaker collapse
+speaker fragmentation
+
+Explain limitations discovered.
+
+======================================================================
+SECTION 7 — PHASE 4 (GROUNDED ENHANCEMENT)
+==========================================
+
+Explain why Phase 2 was insufficient.
+
+Describe:
+
+Normalization
+Master Grounding
+Shared Baseline
+
+Explain:
+
+Why VAD was frozen.
+
+Why variables had to be isolated.
+
+Document:
+
+* complete workflow
+* scripts
+* implementation
+
+Create full result tables.
+
+Compare:
+
+Baseline
+DeepFilterNet3
+SpeechBrain
+
+Analyze:
+
+WER
+DER
+Substitutions
+Deletions
+Insertions
+
+Explain:
+
+why DeepFilterNet reduced substitutions but increased deletions.
+
+Explain why this phase definitively answered the enhancement question.
+
+======================================================================
+SECTION 8 — PHASE 5 (GROUNDED DIARIZATION)
+==========================================
+
+Document the entire Phase 5 journey.
+
+Include:
+
+Initial failures
+MSDD debugging
+Oracle VAD implementation
+Configuration fixes
+split_infer issue
+sigmoid_threshold issue
+
+Explain:
+
+why MSDD originally failed.
+
+Explain:
+
+why Oracle VAD became necessary.
+
+Document:
+
+* pipeline architecture
+* scripts
+* implementations
+* diagnostics
+
+Create complete result tables.
+
+Compare:
+
+Pyannote Auto
+Pyannote Fixed-2
+MSDD Oracle
+
+Include:
+
+DER
+Miss
+False Alarm
+Confusion
+SA-WER
+cpWER
+Predicted Speaker Count
+
+Analyze every metric.
+
+Explain:
+
+Why Pyannote wins DER.
+
+Why MSDD wins utility.
+
+Why cpWER is important.
+
+======================================================================
+SECTION 9 — COMPLETE SCRIPT-BY-SCRIPT REFERENCE
+===============================================
+
+For EVERY script in experiments and supporting utilities:
+
+Explain:
+
+* purpose
+* input
+* output
+* implementation
+* algorithm
+* role in pipeline
+
+Create a dedicated subsection per script.
+
+This should function as technical documentation.
+
+======================================================================
+SECTION 10 — EVALUATION FRAMEWORK
+=================================
+
+Explain every metric used.
+
+Include:
+
+WER
+SA-WER
+cpWER
+DER
+Miss
+False Alarm
+Confusion
+JER
+IER
+
+For each metric:
+
+* definition
+* formula
+* interpretation
+* strengths
+* weaknesses
+
+Explain what constitutes improvement.
+
+======================================================================
+SECTION 11 — COMPLETE RESULTS SYNTHESIS
+=======================================
+
+Create consolidated tables covering:
+
+ALL PHASES
+
+Show:
+
+best performer
+worst performer
+relative improvement
+relative degradation
+
+Identify trends.
+
+Explain:
+
+what consistently worked
+what consistently failed
+
+======================================================================
+SECTION 12 — FINAL HARDENED PIPELINE
+====================================
+
+Provide a complete explanation of:
+
+run_final_hardened_pipeline.py
+
+Explain:
+
+* loading
+* VAD grounding
+* muting trick
+* ASR
+* alignment
+* diarization
+* speaker assignment
+
+Explain every stage.
+
+Create architecture diagrams.
+
+======================================================================
+SECTION 13 — SCIENTIFIC FINDINGS
+================================
+
+Extract major findings.
+
+Examples:
+
+* VAD coverage is safety.
+* Enhancement artifacts hurt modern ASR.
+* Diarization is now the dominant bottleneck.
+* cpWER better reflects forensic utility than DER.
+
+Support findings using actual experimental results.
+
+======================================================================
+SECTION 14 — LESSONS LEARNED
+============================
+
+Document:
+
+* failures
+* dead ends
+* debugging efforts
+* incorrect assumptions
+* successful pivots
+
+Explain what future researchers should avoid.
+
+======================================================================
+SECTION 15 — FUTURE WORK
+========================
+
+Provide detailed recommendations.
+
+Discuss:
+
+* Sortformer
+* TS-VAD
+* EEND
+* transcript-aware diarization
+* overlap-aware diarization
+* speaker linking
+* speaker consistency modeling
+
+Rank recommendations by expected impact.
+
+======================================================================
+SECTION 16 — FINAL CONCLUSION
+=============================
+
+Write a publication-quality conclusion summarizing:
+
+* entire research journey
+* final architecture
+* strongest findings
+* limitations
+* future direction
+
+======================================================================
+
+ADDITIONAL REQUIREMENTS
+
+1. Use actual numbers from reports whenever available.
+2. Use actual code and implementation details whenever available.
+3. Include every experiment and iteration.
+4. Include every significant failure and debugging effort.
+5. Include diagrams, tables, and architecture illustrations.
+6. Be exhaustive.
+7. Do not omit implementation details.
+8. Assume the reader may need to reproduce the entire project from scratch.
+9. Produce a report that can directly serve as project documentation, thesis material, technical report, and onboarding guide simultaneously.
+10. Explain not only WHAT happened, but WHY it happened and HOW it influenced subsequent design decisions.
+
+----
