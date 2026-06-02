@@ -1,0 +1,552 @@
+--- Experiments Tree (Depth 3) ---
+experiments
+  |-- phase5_audit
+  |--   |-- pyannote_fixed2
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- msdd_raw
+  |--   |--   |-- bwc_manifest.json
+  |--   |--   |-- bwc
+  |--   |-- pyannote_auto
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- temp_audio
+  |--   |--   |-- bwc.wav
+  |--   |-- oracle_rttms
+  |--   |--   |-- podcast.rttm
+  |--   |--   |-- bwc.rttm
+  |--   |-- msdd_bwc_test
+  |--   |--   |-- msdd_raw
+  |--   |--   |-- audit_timing.json
+  |--   |--   |-- outputs_msdd
+  |--   |--   |-- diagnostics_msdd
+  |--   |-- pipeline_msdd_oracle.py
+  |--   |-- run_audit_msdd_bwc.py
+  |-- phase7_optimal
+  |--   |-- error_audit
+  |--   |--   |-- diar_false_alarm
+  |--   |--   |-- asr_deletions
+  |--   |--   |-- diar_miss
+  |--   |--   |-- diar_confusion
+  |--   |-- extract_phase7_audit.py
+  |--   |-- grounding
+  |--   |--   |-- bwc_soft_vad.json
+  |--   |-- audio
+  |--   |--   |-- _tmp_deepfilternet
+  |--   |--   |-- bwc_norm.wav
+  |--   |--   |-- bwc.wav
+  |--   |--   |-- podcast_norm.wav
+  |--   |-- run_phase7_optimal.py
+  |--   |-- diarization
+  |--   |--   |-- bwc_diarization.json
+  |--   |--   |-- bwc_manifest.json
+  |--   |--   |-- bwc
+  |--   |--   |-- bwc_soft_vad.rttm
+  |--   |-- eval_phase7_metrics.py
+  |--   |-- reports
+  |--   |--   |-- vad_metrics.csv
+  |--   |--   |-- cp_sawer_metrics.csv
+  |--   |--   |-- diarization_metrics.csv
+  |--   |--   |-- asr_metrics.csv
+  |--   |--   |-- final_summary.csv
+  |--   |-- outputs
+  |--   |--   |-- asr
+  |--   |--   |-- bwc_optimal_final.json
+  |--   |--   |-- bwc_optimal_final.txt
+  |-- __init__.py
+  |-- phase5_grounded_diarization
+  |--   |-- diagnostics_pyannote31
+  |--   |--   |-- podcast_conf_4.json
+  |--   |--   |-- bwc_miss_1.wav
+  |--   |--   |-- podcast_fa_3.json
+  |--   |--   |-- bwc_fa_2.wav
+  |--   |--   |-- bwc_fa_0.wav
+  |--   |--   |-- bwc_conf_1.wav
+  |--   |--   |-- bwc_conf_2.wav
+  |--   |--   |-- podcast_miss_0.wav
+  |--   |--   |-- podcast_miss_4.json
+  |--   |--   |-- podcast_fa_4.wav
+  |--   |--   |-- bwc_fa_1.wav
+  |--   |--   |-- podcast_conf_2.json
+  |--   |--   |-- bwc_miss_0.wav
+  |--   |--   |-- bwc_conf_4.json
+  |--   |--   |-- bwc_miss_2.json
+  |--   |--   |-- podcast_miss_3.json
+  |--   |--   |-- podcast_fa_0.json
+  |--   |--   |-- podcast_miss_1.wav
+  |--   |--   |-- bwc_conf_3.json
+  |--   |--   |-- podcast_miss_4.wav
+  |--   |--   |-- podcast_miss_0.json
+  |--   |--   |-- bwc_conf_0.json
+  |--   |--   |-- podcast_fa_1.wav
+  |--   |--   |-- podcast_conf_3.wav
+  |--   |--   |-- diarization_diagnostics.csv
+  |--   |--   |-- bwc_miss_1.json
+  |--   |--   |-- podcast_conf_1.json
+  |--   |--   |-- bwc_conf_3.wav
+  |--   |--   |-- podcast_miss_2.json
+  |--   |--   |-- podcast_conf_0.wav
+  |--   |--   |-- bwc_conf_2.json
+  |--   |--   |-- podcast_conf_3.json
+  |--   |--   |-- podcast_fa_4.json
+  |--   |--   |-- bwc_miss_0.json
+  |--   |--   |-- podcast_conf_1.wav
+  |--   |--   |-- podcast_fa_0.wav
+  |--   |--   |-- bwc_miss_4.json
+  |--   |--   |-- bwc_miss_2.wav
+  |--   |--   |-- podcast_fa_3.wav
+  |--   |--   |-- bwc_miss_3.json
+  |--   |--   |-- bwc_conf_1.json
+  |--   |--   |-- podcast_miss_1.json
+  |--   |--   |-- bwc_conf_4.wav
+  |--   |--   |-- podcast_miss_3.wav
+  |--   |--   |-- podcast_miss_2.wav
+  |--   |--   |-- podcast_conf_2.wav
+  |--   |--   |-- podcast_conf_0.json
+  |--   |--   |-- bwc_fa_0.json
+  |--   |--   |-- bwc_fa_3.json
+  |--   |--   |-- bwc_fa_2.json
+  |--   |--   |-- bwc_fa_3.wav
+  |--   |--   |-- bwc_miss_4.wav
+  |--   |--   |-- bwc_miss_3.wav
+  |--   |--   |-- podcast_conf_4.wav
+  |--   |--   |-- bwc_conf_0.wav
+  |--   |--   |-- bwc_fa_1.json
+  |--   |--   |-- podcast_fa_1.json
+  |--   |--   |-- bwc_fa_4.wav
+  |--   |--   |-- podcast_fa_2.wav
+  |--   |--   |-- podcast_fa_2.json
+  |--   |--   |-- bwc_fa_4.json
+  |--   |-- outputs_pyannote31_fixed2
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- diagnostics_pyannote31_auto
+  |--   |--   |-- podcast_conf_4.json
+  |--   |--   |-- bwc_miss_1.wav
+  |--   |--   |-- podcast_fa_3.json
+  |--   |--   |-- bwc_fa_2.wav
+  |--   |--   |-- bwc_fa_0.wav
+  |--   |--   |-- bwc_conf_1.wav
+  |--   |--   |-- bwc_conf_2.wav
+  |--   |--   |-- podcast_miss_0.wav
+  |--   |--   |-- podcast_miss_4.json
+  |--   |--   |-- podcast_fa_4.wav
+  |--   |--   |-- bwc_fa_1.wav
+  |--   |--   |-- podcast_conf_2.json
+  |--   |--   |-- bwc_miss_0.wav
+  |--   |--   |-- bwc_conf_4.json
+  |--   |--   |-- bwc_miss_2.json
+  |--   |--   |-- podcast_miss_3.json
+  |--   |--   |-- podcast_fa_0.json
+  |--   |--   |-- podcast_miss_1.wav
+  |--   |--   |-- bwc_conf_3.json
+  |--   |--   |-- podcast_miss_4.wav
+  |--   |--   |-- podcast_miss_0.json
+  |--   |--   |-- bwc_conf_0.json
+  |--   |--   |-- podcast_fa_1.wav
+  |--   |--   |-- podcast_conf_3.wav
+  |--   |--   |-- diarization_diagnostics.csv
+  |--   |--   |-- bwc_miss_1.json
+  |--   |--   |-- podcast_conf_1.json
+  |--   |--   |-- bwc_conf_3.wav
+  |--   |--   |-- podcast_miss_2.json
+  |--   |--   |-- podcast_conf_0.wav
+  |--   |--   |-- bwc_conf_2.json
+  |--   |--   |-- podcast_conf_3.json
+  |--   |--   |-- podcast_fa_4.json
+  |--   |--   |-- bwc_miss_0.json
+  |--   |--   |-- podcast_conf_1.wav
+  |--   |--   |-- podcast_fa_0.wav
+  |--   |--   |-- bwc_miss_4.json
+  |--   |--   |-- bwc_miss_2.wav
+  |--   |--   |-- podcast_fa_3.wav
+  |--   |--   |-- bwc_miss_3.json
+  |--   |--   |-- bwc_conf_1.json
+  |--   |--   |-- podcast_miss_1.json
+  |--   |--   |-- bwc_conf_4.wav
+  |--   |--   |-- podcast_miss_3.wav
+  |--   |--   |-- podcast_miss_2.wav
+  |--   |--   |-- podcast_conf_2.wav
+  |--   |--   |-- podcast_conf_0.json
+  |--   |--   |-- bwc_fa_0.json
+  |--   |--   |-- bwc_fa_3.json
+  |--   |--   |-- bwc_fa_2.json
+  |--   |--   |-- bwc_fa_3.wav
+  |--   |--   |-- bwc_miss_4.wav
+  |--   |--   |-- bwc_miss_3.wav
+  |--   |--   |-- podcast_conf_4.wav
+  |--   |--   |-- bwc_conf_0.wav
+  |--   |--   |-- bwc_fa_1.json
+  |--   |--   |-- podcast_fa_1.json
+  |--   |--   |-- bwc_fa_4.wav
+  |--   |--   |-- podcast_fa_2.wav
+  |--   |--   |-- podcast_fa_2.json
+  |--   |--   |-- bwc_fa_4.json
+  |--   |-- outputs_pyannote31
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- diar_msdd_raw
+  |--   |--   |-- bwc_diarization.json
+  |--   |--   |-- bwc_manifest.json
+  |--   |--   |-- timing_report.json
+  |--   |--   |-- bwc
+  |--   |--   |-- podcast
+  |--   |--   |-- podcast_diarization.json
+  |--   |--   |-- podcast_manifest.json
+  |--   |-- outputs_msdd
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- outputs_pyannote31_auto
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- diagnostics_msdd
+  |--   |--   |-- podcast_conf_4.json
+  |--   |--   |-- bwc_miss_1.wav
+  |--   |--   |-- podcast_fa_3.json
+  |--   |--   |-- bwc_fa_2.wav
+  |--   |--   |-- bwc_fa_0.wav
+  |--   |--   |-- bwc_conf_1.wav
+  |--   |--   |-- bwc_conf_2.wav
+  |--   |--   |-- podcast_miss_0.wav
+  |--   |--   |-- podcast_miss_4.json
+  |--   |--   |-- podcast_fa_4.wav
+  |--   |--   |-- bwc_fa_1.wav
+  |--   |--   |-- podcast_conf_2.json
+  |--   |--   |-- bwc_miss_0.wav
+  |--   |--   |-- bwc_conf_4.json
+  |--   |--   |-- bwc_miss_2.json
+  |--   |--   |-- podcast_miss_3.json
+  |--   |--   |-- podcast_fa_0.json
+  |--   |--   |-- podcast_miss_1.wav
+  |--   |--   |-- bwc_conf_3.json
+  |--   |--   |-- podcast_miss_4.wav
+  |--   |--   |-- podcast_miss_0.json
+  |--   |--   |-- bwc_conf_0.json
+  |--   |--   |-- podcast_fa_1.wav
+  |--   |--   |-- podcast_conf_3.wav
+  |--   |--   |-- diarization_diagnostics.csv
+  |--   |--   |-- bwc_miss_1.json
+  |--   |--   |-- podcast_conf_1.json
+  |--   |--   |-- bwc_conf_3.wav
+  |--   |--   |-- podcast_miss_2.json
+  |--   |--   |-- podcast_conf_0.wav
+  |--   |--   |-- bwc_conf_2.json
+  |--   |--   |-- podcast_conf_3.json
+  |--   |--   |-- podcast_fa_4.json
+  |--   |--   |-- bwc_miss_0.json
+  |--   |--   |-- podcast_conf_1.wav
+  |--   |--   |-- podcast_fa_0.wav
+  |--   |--   |-- bwc_miss_4.json
+  |--   |--   |-- bwc_miss_2.wav
+  |--   |--   |-- podcast_fa_3.wav
+  |--   |--   |-- bwc_miss_3.json
+  |--   |--   |-- bwc_conf_1.json
+  |--   |--   |-- podcast_miss_1.json
+  |--   |--   |-- bwc_conf_4.wav
+  |--   |--   |-- podcast_miss_3.wav
+  |--   |--   |-- podcast_miss_2.wav
+  |--   |--   |-- podcast_conf_2.wav
+  |--   |--   |-- podcast_conf_0.json
+  |--   |--   |-- bwc_fa_0.json
+  |--   |--   |-- bwc_fa_3.json
+  |--   |--   |-- bwc_fa_2.json
+  |--   |--   |-- bwc_fa_3.wav
+  |--   |--   |-- bwc_miss_4.wav
+  |--   |--   |-- bwc_miss_3.wav
+  |--   |--   |-- podcast_conf_4.wav
+  |--   |--   |-- bwc_conf_0.wav
+  |--   |--   |-- bwc_fa_1.json
+  |--   |--   |-- podcast_fa_1.json
+  |--   |--   |-- bwc_fa_4.wav
+  |--   |--   |-- podcast_fa_2.wav
+  |--   |--   |-- podcast_fa_2.json
+  |--   |--   |-- bwc_fa_4.json
+  |--   |-- run_phase5.py
+  |--   |-- diagnostics_pyannote31_fixed2
+  |--   |--   |-- podcast_conf_4.json
+  |--   |--   |-- bwc_miss_1.wav
+  |--   |--   |-- podcast_fa_3.json
+  |--   |--   |-- bwc_fa_2.wav
+  |--   |--   |-- bwc_fa_0.wav
+  |--   |--   |-- bwc_conf_1.wav
+  |--   |--   |-- bwc_conf_2.wav
+  |--   |--   |-- podcast_miss_0.wav
+  |--   |--   |-- podcast_miss_4.json
+  |--   |--   |-- podcast_fa_4.wav
+  |--   |--   |-- bwc_fa_1.wav
+  |--   |--   |-- podcast_conf_2.json
+  |--   |--   |-- bwc_miss_0.wav
+  |--   |--   |-- bwc_conf_4.json
+  |--   |--   |-- bwc_miss_2.json
+  |--   |--   |-- podcast_miss_3.json
+  |--   |--   |-- podcast_fa_0.json
+  |--   |--   |-- podcast_miss_1.wav
+  |--   |--   |-- bwc_conf_3.json
+  |--   |--   |-- podcast_miss_4.wav
+  |--   |--   |-- podcast_miss_0.json
+  |--   |--   |-- bwc_conf_0.json
+  |--   |--   |-- podcast_fa_1.wav
+  |--   |--   |-- podcast_conf_3.wav
+  |--   |--   |-- diarization_diagnostics.csv
+  |--   |--   |-- bwc_miss_1.json
+  |--   |--   |-- podcast_conf_1.json
+  |--   |--   |-- bwc_conf_3.wav
+  |--   |--   |-- podcast_miss_2.json
+  |--   |--   |-- podcast_conf_0.wav
+  |--   |--   |-- bwc_conf_2.json
+  |--   |--   |-- podcast_conf_3.json
+  |--   |--   |-- podcast_fa_4.json
+  |--   |--   |-- bwc_miss_0.json
+  |--   |--   |-- podcast_conf_1.wav
+  |--   |--   |-- podcast_fa_0.wav
+  |--   |--   |-- bwc_miss_4.json
+  |--   |--   |-- bwc_miss_2.wav
+  |--   |--   |-- podcast_fa_3.wav
+  |--   |--   |-- bwc_miss_3.json
+  |--   |--   |-- bwc_conf_1.json
+  |--   |--   |-- podcast_miss_1.json
+  |--   |--   |-- bwc_conf_4.wav
+  |--   |--   |-- podcast_miss_3.wav
+  |--   |--   |-- podcast_miss_2.wav
+  |--   |--   |-- podcast_conf_2.wav
+  |--   |--   |-- podcast_conf_0.json
+  |--   |--   |-- bwc_fa_0.json
+  |--   |--   |-- bwc_fa_3.json
+  |--   |--   |-- bwc_fa_2.json
+  |--   |--   |-- bwc_fa_3.wav
+  |--   |--   |-- bwc_miss_4.wav
+  |--   |--   |-- bwc_miss_3.wav
+  |--   |--   |-- podcast_conf_4.wav
+  |--   |--   |-- bwc_conf_0.wav
+  |--   |--   |-- bwc_fa_1.json
+  |--   |--   |-- podcast_fa_1.json
+  |--   |--   |-- bwc_fa_4.wav
+  |--   |--   |-- podcast_fa_2.wav
+  |--   |--   |-- podcast_fa_2.json
+  |--   |--   |-- bwc_fa_4.json
+  |--   |-- error_analysis
+  |-- phase6_final_diagnostic
+  |--   |-- eval_phase6_metrics.py
+  |--   |-- audio_preprocessed
+  |--   |--   |-- _tmp_speechbrain
+  |--   |--   |-- bwc_deepfilternet.wav
+  |--   |--   |-- _tmp_deepfilternet
+  |--   |--   |-- bwc_norm.wav
+  |--   |--   |-- bwc_speechbrain.wav
+  |--   |--   |-- podcast_norm.wav
+  |--   |-- generate_spectrograms.py
+  |--   |-- run_phase6_main.py
+  |--   |-- error_audit
+  |--   |--   |-- speechbrain
+  |--   |--   |-- baseline
+  |--   |--   |-- deepfilternet
+  |--   |-- grounding
+  |--   |--   |-- bwc_deepfilternet_vad.json
+  |--   |--   |-- bwc_baseline_vad.json
+  |--   |--   |-- bwc_speechbrain_vad.json
+  |--   |--   |-- podcast_baseline_vad.json
+  |--   |-- visualizations
+  |--   |--   |-- bwc_norm_spectrogram.png
+  |--   |--   |-- bwc_spectrogram.png
+  |--   |--   |-- bwc_speechbrain_spectrogram.png
+  |--   |--   |-- bwc_deepfilternet_spectrogram.png
+  |--   |-- extract_phase6_audit.py
+  |--   |-- reports
+  |--   |--   |-- vad_metrics.csv
+  |--   |--   |-- diarization_metrics.csv
+  |--   |--   |-- asr_metrics.csv
+  |--   |--   |-- final_comparison.csv
+  |--   |-- outputs
+  |--   |--   |-- speechbrain
+  |--   |--   |-- baseline
+  |--   |--   |-- deepfilternet
+  |-- phase1_vad
+  |--   |-- outputs_silero
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- grounding_pyannote
+  |--   |--   |-- podcast_grounding.json
+  |--   |--   |-- bwc_grounding.json
+  |--   |-- pipeline_vad_silero.py
+  |--   |-- grounding_silero
+  |--   |--   |-- podcast_grounding.json
+  |--   |--   |-- bwc_grounding.json
+  |--   |-- outputs_pyannote
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- generate_report.py
+  |--   |-- pipeline_vad_pyannote.py
+  |--   |-- run_phase1.py
+  |-- phase4_grounded_enhancement
+  |--   |-- audio_deepfilternet
+  |--   |--   |-- bwc.wav
+  |--   |--   |-- podcast.wav
+  |--   |-- audio_normalized
+  |--   |--   |-- preprocessing_metadata.csv
+  |--   |--   |-- bwc.wav
+  |--   |--   |-- podcast.wav
+  |--   |-- outputs_speechbrain
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- audio_speechbrain
+  |--   |--   |-- bwc.wav
+  |--   |--   |-- podcast.wav
+  |--   |-- outputs_deepfilternet
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- audio_grounded
+  |--   |-- grounding_master
+  |--   |--   |-- podcast_grounding.json
+  |--   |--   |-- bwc_grounding.json
+  |--   |-- outputs_baseline
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- run_phase4.py
+  |-- phase3_diarization
+  |--   |-- outputs_pyannote31
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- outputs_msdd
+  |--   |--   |-- bwc_manifest.json
+  |--   |-- run_hardened_with_custom_diar.py
+  |--   |-- outputs_msdd_final
+  |--   |-- run_phase3.py
+  |--   |-- pipeline_msdd.py
+  |-- phase8_sentence_grouped
+  |--   |-- eval_phase8_metrics.py
+  |--   |-- error_audit
+  |--   |--   |-- diar_false_alarm
+  |--   |--   |-- asr_deletions
+  |--   |--   |-- diar_miss
+  |--   |--   |-- diar_confusion
+  |--   |-- grounding
+  |--   |-- extract_phase8_audit.py
+  |--   |-- audio
+  |--   |-- run_phase8_main.py
+  |--   |-- diarization
+  |--   |-- reports
+  |--   |-- outputs
+  |-- phase2_enhancement
+  |--   |-- audio_deepfilternet
+  |--   |--   |-- bwc.wav
+  |--   |-- run_phase2.py
+  |--   |-- pipeline_enhancement_deepfilternet.py
+  |--   |-- pipeline_enhancement_speechbrain.py
+  |--   |-- grounding_deepfilternet
+  |--   |--   |-- bwc_grounding.json
+  |--   |-- grounding_speechbrain
+  |--   |--   |-- podcast_grounding.json
+  |--   |--   |-- bwc_grounding.json
+  |--   |-- generate_report.py
+  |--   |-- outputs_speechbrain
+  |--   |--   |-- podcast_hardened.txt
+  |--   |--   |-- podcast_hardened.json
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- audio_speechbrain
+  |--   |--   |-- bwc.wav
+  |--   |--   |-- podcast.wav
+  |--   |-- outputs_deepfilternet
+  |--   |--   |-- bwc_hardened.txt
+  |--   |--   |-- bwc_hardened.json
+  |--   |-- outputs_denoiser
+  |--   |-- pipeline_enhancement_denoiser.py
+  |--   |-- audio_denoiser
+  |--   |--   |-- bwc.wav
+  |--   |-- grounding_denoiser
+  |--   |--   |-- bwc_grounding.json
+
+--- Related Directories ---
+raw_audio
+  |-- bwc.wav
+  |-- podcast.wav
+ground_truth
+  |-- bwc.txt
+  |-- podcast.txt
+  |-- parsed
+reports
+  |-- conversational_eval_hardened_v2.csv
+  |-- dataset_manifest.csv
+  |-- conversational_eval_phase4_speechbrain.csv
+  |-- diarization_eval_improved_grounded_comparison.csv
+  |-- conversational_eval_phase4_deepfilternet.csv
+  |-- conversational_eval_phase4_baseline.csv
+  |-- conversational_eval_hardened_v3.csv
+  |-- phase5
+  |-- conversational_eval_phase5_msdd.csv
+  |-- hardened_v2.csv
+  |-- whisperx_vad
+  |-- conversational_eval_error_analysis_hardened_v2.csv
+  |-- conversational_eval_B_normalized.csv
+  |-- diarization_eval_improved_whisperx_2spk.csv
+  |-- conversational_eval_phase5_pyannote31_auto.csv
+  |-- diarization_eval.csv
+  |-- conversational_eval_phase5_audit_fixed2.csv
+  |-- phase4
+  |-- conversational_eval_C_normalized_bandpass.csv
+  |-- asr_eval_improved_phase5_check.csv
+  |-- vad_eval.csv
+  |-- asr_eval_improved_standard.csv
+  |-- asr_eval_improved_custom_script.csv
+  |-- conversational_eval_phase5_pyannote31_fixed2.csv
+  |-- phase2_report.md
+  |-- asr_eval_improved_phase6_debug.csv
+  |-- conversational_eval_hardened_final.csv
+  |-- diarization_eval_improved_phase6_debug.csv
+  |-- asr_eval_improved_whisperx_parallel.csv
+  |-- conversational_eval_phase2_speechbrain.csv
+  |-- conversational_eval_phase5_pyannote31.csv
+  |-- phase1_report.md
+  |-- asr_eval_improved_custom_condition.csv
+  |-- conversational_eval_phase5_audit_auto.csv
+  |-- conversational_eval_phase5_audit_msdd_bwc.csv
+  |-- diarization_eval_improved_whisperx_parallel.csv
+  |-- diarization_eval_improved_standard.csv
+  |-- diarization_comparison_summary.csv
+  |-- asr_comparison_summary.csv
+  |-- conversational_eval_phase1_pyannote.csv
+  |-- wer_eval.csv
+  |-- diarization_eval_improved_pyannote_31.csv
+  |-- conversational_eval_phase1_silero.csv
+  |-- diarization_eval_improved_phase5_check.csv
+  |-- stage1_summary.csv
+  |-- conversational_eval_phase3_pyannote31.csv
+  |-- conversational_eval_phase2_denoiser.csv
+  |-- final_recommendation.md
+  |-- conversational_eval_phase3_msdd.csv
+  |-- conversational_eval_phase2_deepfilternet.csv
+logs
+  |-- bwc_vad_pipeline.log
+  |-- diarization_stage3.log
+  |-- asr_pipeline.log
+  |-- wx_parallel_pipeline
+  |-- whisperx_vad_pipeline.log
+  |-- stage1_pipeline.log
+  |-- wer_eval.log
+  |-- alignment_eval.log
+preprocessed_B_normalized
+  |-- preprocessing_metadata.csv
+  |-- bwc.wav
+  |-- podcast.wav
+preprocessed_C_normalized_bandpass
+  |-- preprocessing_metadata.csv
+  |-- bwc.wav
+  |-- podcast.wav
