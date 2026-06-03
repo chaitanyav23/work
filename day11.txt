@@ -1592,3 +1592,7 @@ For every major source of error:
 The goal is to identify exactly what is preventing the current best pipeline (Phase 11A / Phase 10C) from reducing cpWER below 50%, and determine the single highest-impact target for Phase 12.
 
 ---
+
+https://v20.www-y2mate.com/
+
+
