@@ -1,0 +1,53 @@
+✦ Here are the comprehensive results for Phase 10 (A, B, and C). These metrics highlight the exact trade-offs between using Normalized
+  (10A/10C) vs. Denoised (10B) audio.
+
+  Phase 10 Comparative Results (BWC Dataset)
+
+  ┌─────────────────────────────┬──────────────────┬──────────────────────┬─────────────────────────┬─────────────────────┐
+  │ Metric Category             │ Metric           │ Phase 10A (Baseline) │ Phase 10B (Dual Branch) │ Phase 10C (Control) │
+  ├─────────────────────────────┼──────────────────┼──────────────────────┼─────────────────────────┼─────────────────────┤
+  │ ASR Performance             │ WER              │ 30.0%                │ 37.6%                   │ 30.0%               │
+  │                             │ Substitutions    │ 78                   │ 84                      │ 78                  │
+  │                             │ Insertions       │ 32                   │ 18                      │ 32                  │
+  │                             │ Deletions        │ 44                   │ 91                      │ 44                  │
+  │ VAD Accuracy*               │ F1 Score         │ 0.844                │ 0.844                   │ 0.844               │
+  │                             │ Recall           │ 0.865                │ 0.865                   │ 0.865               │
+  │                             │ Precision        │ 0.825                │ 0.825                   │ 0.825               │
+  │                             │ VAD Miss         │ 13.5%                │ 13.5%                   │ 13.5%               │
+  │                             │ VAD FA           │ 39.7%                │ 39.7%                   │ 39.7%               │
+  │ Diarization (DER)           │ DER              │ 60.0%                │ 52.9%                   │ 46.8%               │
+  │                             │ Diarization Miss │ 28.8%                │ 36.6%                   │ 28.8%               │
+  │                             │ Diarization FA   │ 7.7%                 │ 6.5%                    │ 7.7%                │
+  │                             │ Confusion        │ 23.6%                │ 9.8%                    │ 10.4%               │
+  │ Conversational Intelligence │ cpWER            │ 74.6%                │ 53.0%                   │ 50.3%               │
+  │                             │ SA-WER           │ 61.2%                │ 47.9%                   │ 43.8%               │
+  │                             │ WDER             │ 28.7%                │ 10.1%                   │ 11.4%               │
+  └─────────────────────────────┴──────────────────┴──────────────────────┴─────────────────────────┴─────────────────────┘
+
+  *\*Note: Phase 10A, B, and C all use the same "Master Grounding" derived from the normalized audio to ensure a fair comparison. 10A
+  differs in its internal clustering but respects the same speech boundaries.*
+
+  ---
+
+  Key Observations:
+
+   1. The "Deletions" Trap in 10B: 
+       * In Phase 10B (Denoised), the Deletions (91) are more than double those of Phase 10C (44). This confirms that DeepFilterNet is
+         "eating" words, which directly causes the WER to spike from 30% to 37.6%.
+
+   2. The "Confusion" Fix in 10C:
+       * Phase 10C (using NeMo MSDD) reduced Speaker Confusion from 23.6% (10A) down to 10.4%. This is the primary reason the cpWER
+         improved so drastically.
+
+   3. The 10B Paradox:
+       * Interestingly, Phase 10B has the lowest WDER (10.1%). This means that when it does manage to recognize a word, it assigns it to
+         the correct speaker very accurately. However, because it misses so many words entirely (high deletions), its overall cpWER
+         (53.0%) is still worse than Phase 10C (50.3%).
+
+   4. SA-WER is the Winner:
+       * Phase 10C achieves the best SA-WER (43.8%), proving that the combination of Normalized Audio + MSDD Diarization + Midpoint
+         Fusion is the most reliable architecture for BWC forensics.
+
+
+---
+
