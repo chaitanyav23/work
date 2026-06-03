@@ -51,3 +51,13 @@
 
 ---
 
+OFFICER [00:01:20 - 00:01:26]
+Sir, stop moving and put your hands behind your back.
+
+SUSPECT [00:01:23 - 00:01:28]
+I'm not moving! I'm not moving!
+
+OFFICER [00:01:27 - 00:01:31]
+Stop resisting!
+
+---
