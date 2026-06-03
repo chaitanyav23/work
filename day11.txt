@@ -1345,3 +1345,250 @@ asr_errors  diarization_errors  vad_errors
 
 ---
 
+We have completed Phase 11 and identified a major weakness in our diagnostics framework.
+
+Current diagnostics quality:
+
+- VAD Diagnostics: Strong
+- Diarization Diagnostics: Strong
+- ASR Diagnostics: Weak
+- Speaker Attribution Diagnostics: Missing
+
+The objective is NOT to create a new pipeline.
+
+The objective is to upgrade the diagnostics and evaluation infrastructure so that we can precisely identify why cpWER, SA-WER, and WDER remain high even after moving to the current best pipeline (Phase 11A / Phase 10C).
+
+Create a new diagnostics enhancement module inside:
+
+experiments/phase11_dfn_ablation/
+
+Do NOT overwrite any existing outputs.
+
+Create:
+
+diagnostics_v2/
+├── vad_errors/
+├── asr_errors/
+├── diarization_errors/
+├── attribution_errors/
+├── overlap_analysis/
+├── fusion_analysis/
+└── reports/
+
+=========================================================
+PART 1 — TRUE ASR ERROR DIAGNOSTICS
+
+The current implementation only exports transcript segments.
+
+This is insufficient.
+
+Implement true ASR error analysis.
+
+For every ASR evaluation:
+
+Export:
+
+- substitutions.json
+- deletions.json
+- insertions.json
+
+Each entry must contain:
+
+{
+"start": float,
+"end": float,
+"reference_word": "...",
+"predicted_word": "...",
+"speaker": "...",
+"context_before": "...",
+"context_after": "...",
+"audio_segment": "path"
+}
+
+Generate audio clips with ±2 seconds context around each error.
+
+Store:
+
+diagnostics_v2/asr_errors/
+
+Generate summary statistics:
+
+- substitution count
+- deletion count
+- insertion count
+- top substituted words
+- deletion distribution by duration
+- deletion distribution by speaker
+
+Questions to answer:
+
+1. Are deletions concentrated in low-energy speech?
+2. Are deletions concentrated in overlap regions?
+3. Are deletions concentrated near speaker transitions?
+4. Are deletions more common for certain speakers?
+
+=========================================================
+PART 2 — SPEAKER ATTRIBUTION ERROR DIAGNOSTICS
+
+This is currently missing entirely.
+
+Implement a new attribution analysis module.
+
+For every aligned word:
+
+Compare:
+
+reference speaker
+vs
+predicted speaker
+
+Create:
+
+diagnostics_v2/attribution_errors/
+
+Export:
+
+correct_word_wrong_speaker.json
+
+wrong_word_correct_speaker.json
+
+wrong_word_wrong_speaker.json
+
+Each entry should contain:
+
+{
+"word": "...",
+"start": float,
+"end": float,
+"reference_speaker": "...",
+"predicted_speaker": "...",
+"reference_word": "...",
+"predicted_word": "...",
+"audio_segment": "path"
+}
+
+Generate ±2 second audio clips.
+
+Compute:
+
+- attribution accuracy
+- attribution confusion matrix
+- speaker-to-speaker confusion matrix
+
+Questions to answer:
+
+1. Which speaker pairs are most frequently confused?
+2. Which speaker contributes most attribution errors?
+3. How many cpWER errors are due to speaker attribution rather than ASR?
+
+=========================================================
+PART 3 — OVERLAP ANALYSIS
+
+Create:
+
+diagnostics_v2/overlap_analysis/
+
+Using RTTM and ground truth:
+
+Detect:
+
+- overlap regions
+- speaker interruptions
+- simultaneous speech
+
+For each overlap region:
+
+Store:
+
+{
+"start": ...,
+"end": ...,
+"speakers": [...],
+"duration": ...
+}
+
+Generate audio clips.
+
+Measure:
+
+- DER inside overlap regions
+- DER outside overlap regions
+- cpWER inside overlap regions
+- cpWER outside overlap regions
+
+Question:
+
+How much of the remaining error is caused by overlapping speech?
+
+=========================================================
+PART 4 — FUSION ANALYSIS
+
+Current fusion uses midpoint/maximum overlap assignment.
+
+Create diagnostics that evaluate:
+
+For every word:
+
+- midpoint speaker
+- max-overlap speaker
+- assigned speaker
+- reference speaker
+
+Store:
+
+diagnostics_v2/fusion_analysis/
+
+Export cases where:
+
+1. midpoint assignment was wrong
+2. max-overlap assignment was wrong
+3. both were wrong
+
+Questions:
+
+How many speaker errors originate from fusion rather than MSDD?
+
+Would a different attribution strategy improve cpWER?
+
+=========================================================
+PART 5 — MASTER REPORT
+
+Generate:
+
+diagnostics_v2/reports/phase11_diagnostics_audit.md
+
+The report must answer:
+
+1. What percentage of cpWER comes from ASR?
+2. What percentage of cpWER comes from speaker attribution?
+3. What percentage of cpWER comes from overlap?
+4. What percentage of cpWER comes from fusion mistakes?
+5. What is currently the largest bottleneck in the pipeline?
+
+Rank bottlenecks by impact:
+
+- VAD
+- ASR
+- MSDD
+- Fusion
+- Attribution
+- Overlap
+
+=========================================================
+FINAL OBJECTIVE
+
+Do not merely compute metrics.
+
+Produce evidence.
+
+For every major source of error:
+
+- timestamps
+- audio clips
+- context
+- confusion matrices
+- summary statistics
+
+The goal is to identify exactly what is preventing the current best pipeline (Phase 11A / Phase 10C) from reducing cpWER below 50%, and determine the single highest-impact target for Phase 12.
+
+---
