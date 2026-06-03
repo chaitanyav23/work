@@ -1233,3 +1233,63 @@ The final report should clearly state whether DeepFilterNet is genuinely harmful
 ---
 
 
+ubuntu@brev-eknf259yx:~/marston/marston$ ls experiments/phase11_dfn_ablation/
+audio_variants  grounding         outputs_phase11C         step2_generate_grounding.py  step5_compile_report.py
+comparisons     outputs_phase11A  reports                  step3_run_pipelines.py       visualizations
+diagnostics     outputs_phase11B  step1_generate_audio.py  step4_evaluate.py
+ubuntu@brev-eknf259yx:~/marston/marston$ ls experiments/phase11_dfn_ablation/diagnostics/
+asr_errors  diarization_errors  vad_errors
+
+✦ The diagnostics directory is a special folder created during Phase 11 to provide concrete, file-based evidence for the errors that our
+  metrics are reporting. Instead of just seeing a WER of "37%", you can go into this directory and see the exact segments or listen to
+  the audio clips where those errors occurred.
+
+  How is it generated?
+  The experiments/phase11_dfn_ablation/step4_evaluate.py script is responsible for creating and populating this directory. It runs after
+  all the pipelines have produced their final JSON outputs.
+
+   1. VAD Diagnostics: The evaluate_vad function inside step4_evaluate.py compares the ground truth speech regions to the predicted VAD
+      segments (from 11A_grounding.json and 11B_grounding.json) on a frame-by-frame basis. It then writes a JSON file listing the start
+      and end times of every "miss" and "false alarm."
+   2. ASR Diagnostics: The export_asr_errors function simply dumps the final JSON output of each pipeline. This provides a simple way to
+      review the transcribed segments and their timestamps for context around ASR errors.
+   3. Diarization Diagnostics: The script calls the pre-existing analyze_diarization_errors.py utility. This powerful script compares
+      the speaker labels in the ground truth against the pipeline's output. For every region of Miss, False Alarm, or Confusion, it:
+       * Logs the timestamp of the error.
+       * Extracts a small .wav file of the audio around that error (±2 seconds) so you can listen to the mistake.
+
+  What does it store?
+
+  The directory is broken down by error type:
+
+  1. diagnostics/vad_errors/
+  This contains JSON files that tell you exactly when the Voice Activity Detection made a mistake.
+
+   * 11A_vad_errors.json:
+       * "miss": A list of timestamps where the ground truth had speech, but the VAD from normalized audio predicted silence.
+       * "false_alarm": A list of timestamps where there was no speech, but the VAD detected something.
+   * 11B_vad_errors.json: Same as above, but for the VAD run on the DeepFilterNet audio.
+
+  2. diagnostics/asr_errors/
+  This provides the full transcribed output for each pipeline, which serves as a reference for ASR errors.
+
+   * 11A_asr_segments.json: A JSON file containing every transcribed segment from the control pipeline (11A). If the WER report shows a
+     substitution, you can find the corresponding segment here to see the full sentence context.
+   * 11B_asr_segments.json: Same, for pipeline 11B.
+   * 11C_asr_segments.json: Same, for pipeline 11C.
+
+  3. diagnostics/diarization_errors/
+  This is the most detailed part, containing sub-folders for each pipeline.
+
+   * 11A/:
+       * diarization_errors.csv: A spreadsheet listing every single diarization error from pipeline 11A.
+       * error_001_MISS_3.75_3.79.wav: An audio clip of a "Miss" error, where the diarizer failed to assign a speaker to a speech
+         segment.
+       * error_002_CONFUSION_10.11_12.45.wav: An audio clip of a "Confusion" error, where speech from "Speaker 1" was incorrectly
+         assigned to "Speaker 2".
+   * 11B/ and 11C/: Contain the same structure of .csv and .wav files for their respective pipelines.
+
+  In short, the diagnostics directory is the "proof" for our findings, allowing for deep, qualitative analysis of the quantitative
+  metrics.
+
+---
