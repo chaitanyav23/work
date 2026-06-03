@@ -2153,3 +2153,527 @@ simultaneously.
 
 
 ---
+
+# Phase 10: Dual-Branch Fusion Study — Detailed Summary
+
+Phase 10 was one of the most important experiments in the entire project because it answered a fundamental question:
+
+> **Should ASR and diarization use the same audio representation, or should they use different audio representations optimized for each task?**
+
+Up until this point, there was evidence that:
+
+* DeepFilterNet (DFN) made audio sound much cleaner to humans.
+* MSDD diarization was outperforming Pyannote clustering.
+* Normalized audio was consistently producing better WER than enhanced audio.
+
+However, nobody knew whether:
+
+```text
+Cleaned audio → better ASR
+Raw/normalized audio → better diarization
+```
+
+could be combined into a superior hybrid system.
+
+Phase 10 was designed to test exactly that.
+
+---
+
+# Core Hypothesis
+
+The team hypothesized:
+
+```text
+DeepFilterNet audio
+↓
+better speech clarity
+↓
+better ASR
+
+Normalized audio
+↓
+better speaker characteristics preserved
+↓
+better diarization
+
+Combine both
+↓
+Best overall conversational intelligence
+```
+
+This became the **Dual-Branch Fusion Hypothesis**.
+
+---
+
+# Master Grounding
+
+Before any pipeline ran:
+
+```text
+Normalized Audio
+↓
+Pyannote 3.1 VAD
+↓
+Master Grounding
+```
+
+was generated.
+
+This grounding was shared across all pipelines.
+
+Purpose:
+
+```text
+Same speech boundaries
+Same evaluation regions
+Fair comparison
+```
+
+This was extremely important scientifically because it prevented VAD differences from contaminating the comparison.
+
+---
+
+# Phase 10A — Reference Baseline
+
+## Architecture
+
+```text
+Normalized Audio
+        ↓
+Pyannote 3.1 VAD
+        ↓
+Grounding
+        ↓
+WhisperX
+        ↓
+Pyannote Clustering Diarization
+        ↓
+Speaker Attribution
+        ↓
+Evaluation
+```
+
+This represents the traditional approach.
+
+---
+
+## Characteristics
+
+### Advantages
+
+* Simple
+* Single audio path
+* No fusion complexity
+
+### Disadvantages
+
+* Uses Pyannote clustering
+* Speaker collapse problems
+* High confusion
+
+---
+
+## Results
+
+| Metric    | Value |
+| --------- | ----- |
+| WER       | 30.0% |
+| DER       | 60.0% |
+| Miss      | 28.8% |
+| FA        | 7.7%  |
+| Confusion | 23.6% |
+| SA-WER    | 61.2% |
+| WDER      | 28.7% |
+| cpWER     | 74.6% |
+
+The biggest issue:
+
+```text
+Confusion = 23.6%
+```
+
+Pyannote frequently assigned speech to the wrong speaker.
+
+---
+
+# Phase 10B — Dual-Branch Fusion
+
+This was the experimental pipeline.
+
+---
+
+## Architecture
+
+```text
+                    +----------------------+
+                    |  Normalized Audio    |
+                    +----------+-----------+
+                               |
+                               v
+                          MSDD Diarization
+                               |
+                               v
+                       Speaker Timeline
+                               |
+                               |
+                               |
++-------------------+          |
+| DeepFilterNet     |          |
+| Enhanced Audio    |          |
++---------+---------+          |
+          |                    |
+          v                    |
+       WhisperX                |
+          |                    |
+          v                    |
+      Word Timestamps          |
+          |                    |
+          +---------Fusion-----+
+                    |
+                    v
+         Speaker Attributed Transcript
+```
+
+---
+
+## Design Philosophy
+
+ASR and diarization receive different audio.
+
+### ASR Branch
+
+```text
+DFN Audio
+↓
+WhisperX
+```
+
+Goal:
+
+```text
+Cleaner speech
+Better recognition
+```
+
+---
+
+### Diarization Branch
+
+```text
+Normalized Audio
+↓
+MSDD
+```
+
+Goal:
+
+```text
+Preserve speaker embeddings
+Better speaker separation
+```
+
+---
+
+### Fusion
+
+A custom fusion script assigned speakers to words.
+
+Method:
+
+```text
+Word midpoint
+↓
+Find active MSDD speaker
+↓
+Assign speaker label
+```
+
+---
+
+# Why It Looked Promising
+
+Humans listening to DFN audio reported:
+
+```text
+Cleaner
+Less noise
+Less sirens
+More pleasant
+```
+
+Spectrograms showed:
+
+```text
+Noise suppression
+Cleaner frequency bands
+```
+
+The expectation was:
+
+```text
+Cleaner audio
+↓
+Better Whisper
+↓
+Lower WER
+```
+
+---
+
+# What Actually Happened
+
+The opposite.
+
+---
+
+## Results
+
+| Metric    | Value |
+| --------- | ----- |
+| WER       | 37.6% |
+| DER       | 52.9% |
+| Confusion | 9.8%  |
+| SA-WER    | 47.9% |
+| WDER      | 10.1% |
+| cpWER     | 53.0% |
+
+---
+
+## The Deletion Explosion
+
+Most important observation:
+
+| Metric    | 10A | 10B |
+| --------- | --- | --- |
+| Deletions | 44  | 91  |
+
+Deletions more than doubled.
+
+---
+
+## Why?
+
+DeepFilterNet was removing:
+
+```text
+weak speech
+distant speech
+low-energy consonants
+```
+
+Humans could still understand it.
+
+Whisper could not.
+
+Result:
+
+```text
+speech
+↓
+removed by DFN
+↓
+treated as silence
+↓
+deletion
+```
+
+---
+
+## Interesting Observation
+
+Substitutions decreased.
+
+Meaning:
+
+```text
+Remaining words
+↓
+cleaner
+↓
+easier to recognize
+```
+
+But:
+
+```text
+many words disappeared completely
+```
+
+which is worse.
+
+---
+
+# Phase 10C — MSDD Control
+
+This became the winning pipeline.
+
+---
+
+## Architecture
+
+```text
+Normalized Audio
+        ↓
+Pyannote VAD
+        ↓
+Grounding
+        ↓
+WhisperX
+        ↓
+MSDD
+        ↓
+Word-Level Fusion
+        ↓
+Conversational Timeline
+```
+
+Single audio representation.
+
+No DFN.
+
+---
+
+## Philosophy
+
+Instead of:
+
+```text
+Different audio for ASR
+Different audio for diarization
+```
+
+use:
+
+```text
+Same normalized audio everywhere
+```
+
+---
+
+# Results
+
+| Metric    | Value |
+| --------- | ----- |
+| WER       | 30.0% |
+| DER       | 46.8% |
+| Miss      | 28.8% |
+| FA        | 7.7%  |
+| Confusion | 10.4% |
+| SA-WER    | 43.8% |
+| WDER      | 11.4% |
+| cpWER     | 50.3% |
+
+This was the best overall result.
+
+---
+
+# Why 10C Won
+
+## Reason 1: Normalized Audio Preserved Speech
+
+Unlike DFN:
+
+```text
+No aggressive suppression
+No speech removal
+```
+
+Therefore:
+
+```text
+WER stayed low
+```
+
+---
+
+## Reason 2: MSDD Reduced Speaker Confusion
+
+Compared to Phase 10A:
+
+| Metric    | 10A   | 10C   |
+| --------- | ----- | ----- |
+| Confusion | 23.6% | 10.4% |
+
+Huge reduction.
+
+MSDD solved much of the speaker attribution problem.
+
+---
+
+## Reason 3: Fusion Worked Better
+
+Because:
+
+```text
+ASR words accurate
++
+MSDD speakers accurate
+```
+
+Fusion had fewer conflicts.
+
+---
+
+# Final Comparison
+
+| Metric    | 10A  | 10B  | 10C      |
+| --------- | ---- | ---- | -------- |
+| WER       | 30.0 | 37.6 | 30.0     |
+| DER       | 60.0 | 52.9 | 46.8     |
+| Confusion | 23.6 | 9.8  | 10.4     |
+| SA-WER    | 61.2 | 47.9 | 43.8     |
+| WDER      | 28.7 | 10.1 | 11.4     |
+| cpWER     | 74.6 | 53.0 | **50.3** |
+
+---
+
+# Scientific Conclusions of Phase 10
+
+### Conclusion 1
+
+**MSDD is substantially better than Pyannote clustering for BWC audio.**
+
+---
+
+### Conclusion 2
+
+**DeepFilterNet improves perceptual quality but degrades WhisperX transcription.**
+
+---
+
+### Conclusion 3
+
+**Using separate audio representations for ASR and diarization does not outperform a unified normalized representation.**
+
+---
+
+### Conclusion 4
+
+**Conversational metrics (cpWER, SA-WER, WDER) reveal improvements that DER alone cannot capture.**
+
+---
+
+# The Lasting Impact of Phase 10
+
+Phase 10 established the architecture that survived every later experiment:
+
+```text
+Raw Audio
+↓
+Loudness Normalization
+↓
+Pyannote VAD
+↓
+Grounding
+↓
+WhisperX
+↓
+MSDD
+↓
+Word-Level Fusion
+↓
+Speaker-Attributed Conversational Timeline
+```
+
+Phase 11 later reproduced these findings through a controlled ablation study, which is why **Phase 10C became the foundation of the current production baseline.**
+
