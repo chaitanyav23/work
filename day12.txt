@@ -1,0 +1,560 @@
+# Phase 13 — Karen End-to-End Generalization Benchmark
+
+## Objective
+
+Phase 13 is NOT an optimization experiment.
+
+Phase 13 is a true out-of-distribution evaluation of the current best validated conversational intelligence pipeline (Phase 10C / Phase 11A architecture) on a completely new recording:
+
+```text
+raw_audio/karen.mp3
+```
+
+using:
+
+```text
+ground_truth/karen.txt
+```
+
+for evaluation only.
+
+The goal is to determine:
+
+1. How well the BWC-optimized pipeline generalizes to unseen conversational audio.
+2. Whether MSDD can discover speakers without any speaker-count prior.
+3. Whether the current bottleneck remains ASR, diarization, attribution, fusion, or overlap.
+4. How the Karen dataset compares to the BWC benchmark.
+
+No information from the ground truth may be used during inference.
+
+Ground truth must remain evaluation-only.
+
+---
+
+# Directory Structure
+
+Create:
+
+```text
+experiments/
+└── phase13_karen_generalization/
+    ├── audio/
+    ├── grounding/
+    ├── manifests/
+    ├── diarization/
+    ├── outputs/
+    ├── diagnostics/
+    │   ├── vad/
+    │   ├── asr/
+    │   ├── diarization/
+    │   ├── attribution/
+    │   ├── overlap/
+    │   └── fusion/
+    ├── reports/
+    ├── visualizations/
+    └── comparisons/
+```
+
+Do not overwrite any previous experiment.
+
+---
+
+# Architecture
+
+Use the validated Phase 11A / Phase 10C architecture only.
+
+```text
+Karen.mp3
+      │
+      ▼
+FFmpeg LoudNorm
+(I=-20 TP=-1.5 LRA=11)
+      │
+      ▼
+Karen_Normalized.wav
+      │
+      ▼
+Pyannote 3.1 VAD
+      │
+      ▼
+Grounding JSON
+      │
+      ▼
+Oracle-VAD RTTM
+(dummy speaker labels only)
+      │
+      ├─────────────────────┐
+      │                     │
+      ▼                     ▼
+NeMo MSDD             WhisperX Large-v3
+Speaker Discovery     language="en"
+      │                     │
+      ▼                     ▼
+Speaker Turns     Wav2Vec2 Alignment
+      │                     │
+      └──────────┬──────────┘
+                 ▼
+      Maximum-Overlap Fusion
+                 ▼
+      Speaker Attributed Timeline
+                 ▼
+            Evaluation
+```
+
+---
+
+# Step 1 — Audio Preparation
+
+Input:
+
+```text
+raw_audio/karen.mp3
+```
+
+Convert to:
+
+```text
+audio/karen_normalized.wav
+```
+
+using:
+
+```bash
+ffmpeg -i raw_audio/karen.mp3 \
+-af loudnorm=I=-20:TP=-1.5:LRA=11 \
+-ar 16000 \
+-ac 1 \
+audio/karen_normalized.wav \
+-y
+```
+
+Generate an audio audit report:
+
+```text
+reports/audio_audit.csv
+```
+
+including:
+
+* Duration
+* Sample Rate
+* LUFS
+* RMS
+* Peak
+* Spectral Centroid
+* Spectral Roll-off
+
+---
+
+# Step 2 — VAD Grounding
+
+Run:
+
+```text
+Pyannote 3.1 VAD
+```
+
+Generate:
+
+```text
+grounding/karen_grounding.json
+```
+
+Apply the same merge-gap logic used in Phase 11.
+
+Record:
+
+* Number of raw segments
+* Number of merged segments
+* Total speech duration
+
+---
+
+# Step 3 — Oracle VAD RTTM
+
+Convert grounding into:
+
+```text
+grounding/karen_oracle.rttm
+```
+
+Important:
+
+This RTTM must contain only:
+
+```text
+speech activity regions
+```
+
+using dummy speaker labels:
+
+```text
+speaker
+```
+
+No identity information.
+
+No speaker count information.
+
+No ground-truth speaker names.
+
+---
+
+# Step 4 — WhisperX
+
+Use:
+
+```python
+language="en"
+```
+
+Do not use auto language detection.
+
+Use:
+
+```text
+WhisperX Large-v3
+```
+
+For each VAD segment:
+
+1. Slice audio.
+2. Transcribe.
+3. Align with wav2vec2.
+
+Generate:
+
+```text
+outputs/aligned_words.json
+```
+
+containing:
+
+* word
+* start
+* end
+
+---
+
+# Step 5 — MSDD
+
+Run:
+
+```text
+NeMo diar_msdd_telephonic
+```
+
+Configuration:
+
+```python
+oracle_vad = True
+oracle_num_speakers = False
+max_num_speakers = 10
+```
+
+Requirements:
+
+* Do NOT use ground truth.
+* Do NOT use speaker count from ground truth.
+* Do NOT hardcode number of speakers.
+* MSDD must discover speakers automatically.
+
+Generate:
+
+```text
+diarization/karen_msdd.rttm
+```
+
+and report:
+
+```text
+Discovered Speaker Count
+```
+
+---
+
+# Step 6 — Fusion
+
+Use the validated fusion implementation.
+
+Important:
+
+The actual assignment logic must be:
+
+```text
+Maximum Overlap Duration
+```
+
+not midpoint assignment.
+
+For each aligned word:
+
+Assign:
+
+```text
+speaker = speaker_with_max_overlap
+```
+
+Fallback:
+
+nearest speaker turn within tolerance.
+
+Generate:
+
+```text
+outputs/karen_final.json
+outputs/karen_final.txt
+```
+
+---
+
+# Step 7 — Ground Truth Processing
+
+Use:
+
+```text
+ground_truth/karen.txt
+```
+
+ONLY after inference is complete.
+
+Convert to:
+
+```text
+ground_truth_json/
+ground_truth_rttm/
+```
+
+for evaluation.
+
+Verify:
+
+No ground-truth data is referenced before evaluation.
+
+---
+
+# Step 8 — VAD Evaluation
+
+Compute:
+
+* Accuracy
+* Precision
+* Recall
+* F1
+* Miss Rate
+* False Alarm Rate
+
+Generate:
+
+```text
+reports/vad_metrics.csv
+```
+
+and:
+
+```text
+diagnostics/vad/
+```
+
+containing:
+
+* miss regions
+* false alarm regions
+
+with timestamps.
+
+---
+
+# Step 9 — ASR Evaluation
+
+Compute:
+
+* WER
+* Ref Words
+* Substitutions
+* Deletions
+* Insertions
+
+Generate:
+
+```text
+reports/asr_metrics.csv
+```
+
+Export:
+
+```text
+diagnostics/asr/
+```
+
+including:
+
+* substitutions
+* deletions
+* insertions
+
+with timestamps and ±2s audio clips.
+
+---
+
+# Step 10 — Diarization Evaluation
+
+Compute:
+
+* DER
+* Miss
+* False Alarm
+* Confusion
+
+Generate:
+
+```text
+reports/diarization_metrics.csv
+```
+
+Export:
+
+```text
+diagnostics/diarization/
+```
+
+including:
+
+* MISS clips
+* FA clips
+* CONFUSION clips
+
+with ±2s context.
+
+---
+
+# Step 11 — Attribution Evaluation
+
+Compute:
+
+* Attribution Accuracy
+* Speaker Confusion Matrix
+
+Generate:
+
+```text
+diagnostics/attribution/
+```
+
+including:
+
+* correct word / wrong speaker
+* wrong word / correct speaker
+* wrong word / wrong speaker
+
+with timestamps and clips.
+
+---
+
+# Step 12 — Overlap Evaluation
+
+Detect:
+
+* overlap regions
+* interruptions
+* simultaneous speech
+
+Compute:
+
+* DER inside overlap
+* DER outside overlap
+* cpWER inside overlap
+* cpWER outside overlap
+
+Generate:
+
+```text
+diagnostics/overlap/
+```
+
+---
+
+# Step 13 — Conversational Evaluation
+
+Compute:
+
+* SA-WER
+* WDER
+* cpWER
+
+Generate:
+
+```text
+reports/conversational_metrics.csv
+```
+
+---
+
+# Step 14 — BWC Comparison
+
+Compare Karen results against the current benchmark:
+
+```text
+Phase 11A
+```
+
+Create:
+
+```text
+comparisons/karen_vs_bwc.csv
+```
+
+including:
+
+| Metric | BWC Phase 11A | Karen | Delta |
+| ------ | ------------- | ----- | ----- |
+| WER    |               |       |       |
+| DER    |               |       |       |
+| Miss   |               |       |       |
+| FA     |               |       |       |
+| Conf   |               |       |       |
+| SA-WER |               |       |       |
+| WDER   |               |       |       |
+| cpWER  |               |       |       |
+
+---
+
+# Step 15 — Final Report
+
+Generate:
+
+```text
+reports/phase13_karen_generalization_report.md
+```
+
+The report must include:
+
+1. Complete architecture diagram.
+2. Complete directory structure.
+3. Audio audit.
+4. VAD analysis.
+5. ASR analysis.
+6. Diarization analysis.
+7. Attribution analysis.
+8. Overlap analysis.
+9. Conversational metrics.
+10. Discovered speaker count vs GT speaker count.
+11. Karen vs BWC comparison.
+12. Error examples.
+13. Bottleneck identification.
+
+---
+
+# Final Questions To Answer
+
+1. Does the pipeline generalize beyond BWC?
+2. How many speakers did MSDD discover?
+3. Is MSDD under-clustering or over-clustering?
+4. What is the largest contributor to cpWER?
+5. Is overlap a major failure mode?
+6. Is attribution a larger problem than ASR?
+7. What should be improved in Phase 14?
+
+The objective is not to improve performance.
+
+The objective is to rigorously evaluate the current best conversational intelligence pipeline on a completely unseen real-world recording and identify the next research direction.
