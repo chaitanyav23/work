@@ -873,3 +873,216 @@ Generate one publication-quality summary figure comparing all scales side-by-sid
      embeddings.
    - /metrics/: JSON summaries containing the detailed metrics for each respective embedding scale.
 
+
+----
+
+
+You are given an existing embedding analysis pipeline for NeMo MSDD TitaNet embeddings from a research-grade body-worn camera conversational audio project.
+
+Existing script:
+experiments/phase13_karen_generalization/analyze_embeddings.py
+
+Current functionality already:
+
+- loads multiscale TitaNet embeddings
+- computes PCA and UMAP
+- creates global embedding plots
+- creates trajectory plots
+- computes embedding metrics
+
+Your task is to EXTEND the pipeline with LOCAL CONVERSATIONAL TRAJECTORY ANALYSIS focused ONLY on:
+
+- Scale 1 embeddings
+- 1.2 second window
+- 0.6 second stride
+
+Objective:
+Create localized conversational embedding trajectory visualizations that allow detailed inspection of:
+
+- speaker continuity
+- speaker transitions
+- overlap instability
+- embedding drift
+- local conversational dynamics
+- speaker fragmentation
+
+Data location:
+experiments/phase13_karen_generalization/diarization/msdd_outputs/
+
+Relevant files:
+
+- speaker_outputs/embeddings/subsegments_scale1_embeddings.pkl
+- speaker_outputs/subsegments_scale1.json
+- pred_rttms/karen_normalized.rttm
+
+IMPORTANT RTTM OBSERVATIONS:
+
+- Multiple speakers exist (speaker_0 through speaker_5)
+- Speaker durations are highly imbalanced
+- Many RTTM segments are extremely short (<500ms)
+- Sparse intermittent speakers appear throughout the conversation
+- Some speaker labels likely correspond to fragmented/noisy clusters
+
+Therefore:
+
+- speaker assignment must be robust
+- embeddings may overlap multiple RTTM regions
+- nearest-label assignment alone is insufficient
+
+Speaker Assignment Requirements:
+For each embedding window:
+
+1. Compute temporal overlap against RTTM regions.
+2. Assign the speaker with MAXIMUM temporal overlap.
+3. If overlap is ambiguous:
+   - assign MULTI_SPEAKER
+   - or LOW_CONFIDENCE
+4. If no sufficient overlap exists:
+   - assign UNKNOWN
+5. Save overlap ratios and assignment confidence.
+
+Do NOT use simplistic nearest timestamp matching.
+
+Local Window Analysis Requirements:
+Implement:
+
+- configurable local windows (default 5 seconds)
+- configurable overlap between local windows
+- sliding-window traversal across the entire conversation
+
+CLI examples:
+
+python analyze_embeddings.py 
+--local 
+--scale 1 
+--window_size 5 
+--start 50 
+--end 70
+
+and:
+
+python analyze_embeddings.py 
+--local 
+--scale 1 
+--auto_slide
+
+Visualization Requirements:
+Generate LOCAL PCA and LOCAL UMAP plots for every selected local region.
+
+Each plot MUST:
+
+- show ONLY embeddings from that local interval
+- connect embeddings temporally using trajectory lines
+- color embeddings by assigned speaker label
+- visually distinguish:
+  - UNKNOWN
+  - MULTI_SPEAKER
+  - LOW_CONFIDENCE
+- optionally annotate timestamps
+- include legends
+- use publication-quality formatting
+
+Plot titles must include:
+
+- local interval
+- active speakers
+- number of embeddings
+- speaker transition count
+- window size
+
+Transition Detection:
+Detect:
+
+- speaker label changes
+- abrupt embedding-space jumps
+- high-velocity trajectory movement
+- unstable local manifolds
+
+Visually mark:
+
+- transition points
+- outlier embeddings
+- fragmentation regions
+
+Quantitative Local Metrics:
+For each local interval compute:
+
+- intra-speaker variance
+- inter-speaker centroid distance
+- local silhouette score
+- trajectory smoothness
+- embedding velocity
+- transition density
+- fragmentation score
+
+Special Analysis:
+Automatically identify:
+
+- stable speaker manifolds
+- unstable/noisy regions
+- overlap-heavy regions
+- sparse speaker appearances
+- likely diarization failure zones
+- speaker fragmentation artifacts
+
+Output structure:
+embedding_analysis/local_windows/
+├── pca/
+├── umap/
+├── trajectories/
+├── csv/
+├── metrics/
+└── reports/
+
+For every local interval save:
+
+- PCA scatter plot
+- PCA trajectory plot
+- UMAP scatter plot
+- CSV with:
+  - timestamps
+  - assigned speaker
+  - overlap confidence
+  - PCA coordinates
+  - UMAP coordinates
+
+Generate:
+
+- global summary report
+- fragmentation analysis report
+- transition statistics report
+
+Visualization goals:
+The plots should allow direct visual interpretation of:
+
+- speaker manifold continuity
+- speaker switching behavior
+- embedding instability under BWC acoustics
+- fragmentation behavior in MSDD outputs
+- conversational geometric motion
+
+Use:
+
+- matplotlib
+- seaborn
+- sklearn
+- pandas
+- numpy
+- umap-learn
+
+Code requirements:
+
+- modular
+- heavily commented
+- research-quality
+- robust to RTTM fragmentation
+- robust to sparse speaker appearances
+- robust to overlap ambiguity
+- publication-quality output
+
+This is representation-level conversational speaker geometry analysis for noisy body-worn camera diarization research.
+
+
+---
+
+
