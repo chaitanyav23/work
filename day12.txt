@@ -558,3 +558,135 @@ The report must include:
 The objective is not to improve performance.
 
 The objective is to rigorously evaluate the current best conversational intelligence pipeline on a completely unseen real-world recording and identify the next research direction.
+
+
+------------
+
+
+✦ Phase 13 is complete. I have successfully executed the generalization benchmark on the Karen dataset, following the repair of the
+  source audio.
+
+  Key Findings
+
+   * Generalization: The Phase 11A architecture generalizes effectively. The cpWER on the Karen dataset is 0.2685, significantly better
+     than the 0.5032 benchmark on the BWC dataset.
+   * Speaker Discovery: NeMo MSDD successfully discovered speakers without a prior count, identifying 6 speakers (an over-clustering
+     compared to the 4 ground-truth speakers).
+   * ASR Performance: Transcription accuracy was much higher on this dataset (WER: 0.1467) compared to BWC (WER: 0.3002), likely due to
+     better acoustic conditions.
+   * Diarization Bottleneck: Despite better ASR, diarization remains a challenge with a DER of 0.4070. The primary error sources are
+     Speaker Confusion (0.1745) and False Alarms (0.1512).
+   * VAD Sensitivity: The VAD showed a high False Alarm Rate (0.67), indicating it is capturing non-speech background noise as speech
+     activity regions.
+
+  Karen vs. BWC Comparison (Phase 11A Baseline)
+
+  ┌────────┬───────────────┬────────┬───────────────────────────┐
+  │ Metric │ BWC Phase 11A │ Karen  │ Delta                     │
+  ├────────┼───────────────┼────────┼───────────────────────────┤
+  │ WER    │ 0.3002        │ 0.1467 │ -0.1535 (Lower is better) │
+  │ DER    │ 0.4679        │ 0.4070 │ -0.0609 (Lower is better) │
+  │ Miss   │ 0.2878        │ 0.0814 │ -0.2064 (Lower is better) │
+  │ FA     │ 0.0766        │ 0.1512 │ +0.0746 (Higher is worse) │
+  │ Conf   │ 0.1035        │ 0.1745 │ +0.0710 (Higher is worse) │
+  │ cpWER  │ 0.5032        │ 0.2685 │ -0.2347 (Lower is better) │
+  │ WDER   │ 0.1136        │ 0.1849 │ +0.0713 (Higher is worse) │
+  └────────┴───────────────┴────────┴───────────────────────────┘
+
+  Summary of Artifacts
+   * Final Report: experiments/phase13_karen_generalization/reports/phase13_karen_generalization_report.md
+   * Detailed Metrics: experiments/phase13_karen_generalization/reports/
+   * Final Timeline: experiments/phase13_karen_generalization/outputs/karen_final.txt
+   * Diagnostics: experiments/phase13_karen_generalization/diagnostics/
+
+
+---
+
+✦ I have performed a technical code-level audit of the Phase 13 pipeline. Below is the exact architecture, logic, and hyperparameter
+  mapping derived directly from the scripts executed.
+
+  Phase 13 Architecture (Direct Code Mapping)
+
+    1 [Step 0] Audio Repair (FFmpeg)
+    2     │   Inputs: experiments/karen_11A_audit/audio/karen.wav
+    3     │   Command: ffmpeg -i ... -t 426 -ar 16000 -ac 1 raw_audio/karen.wav
+    4     │   Logic: Truncate to 426s, downsample to 16kHz, convert to Mono.
+    5     ▼
+    6 [Step 1] Normalization (FFmpeg LoudNorm)
+    7     │   Inputs: raw_audio/karen.wav
+    8     │   Command: ffmpeg -i ... -af loudnorm=I=-20:TP=-1.5:LRA=11
+    9     │   Outputs: audio/karen_normalized.wav
+   10     ▼
+   11 [Step 2] VAD Grounding (step2_vad_grounding.py)
+   12     │   Model: pyannote/voice-activity-detection (Pyannote 3.1 VAD)
+   13     │   Logic: support() temporal merge -> Custom Clean (merge_gap=0.15s, min_dur=0.1s)
+   14     │   Outputs: grounding/karen_grounding.json
+   15     ▼
+   16 [Step 3] Oracle RTTM (step3_oracle_rttm.py)
+   17     │   Logic: Convert JSON segments to RTTM format with dummy "speaker" labels.
+   18     │   Outputs: grounding/karen_oracle.rttm
+   19     ▼
+   20 [Step 4] WhisperX ASR (step4_whisperx.py)
+   21     │   Model: WhisperX large-v3 (compute_type="float16", language="en")
+   22     │   Logic: 
+   23     │     1. Manual Slicing: Extract audio chunks based on VAD boundaries.
+   24     │     2. Transcription: greedy (no previous context).
+   25     │     3. Alignment: Wav2Vec2.0 forced phoneme alignment.
+   26     │   Outputs: outputs/aligned_words.json
+   27     ▼
+   28 [Step 5] MSDD Speaker Discovery (step5_msdd.py)
+   29     │   Model: NeMo diar_msdd_telephonic (titanet_large embeddings)
+   30     │   Parameters: 
+   31     │     - oracle_vad: True (using Step 3 RTTM)
+   32     │     - max_num_speakers: 10
+   33     │     - oracle_num_speakers: False (Discovery Mode)
+   34     │     - window_lengths: [1.5, 1.2, 1.0, 0.8, 0.5]
+   35     │   Outputs: diarization/karen_msdd.rttm
+   36     ▼
+   37 [Step 6] Fusion (step6_fusion.py)
+   38     │   Inputs: aligned_words.json + karen_msdd.rttm
+   39     │   Logic: 
+   40     │     1. Word Attribution: Assign speaker via Maximum Overlap Duration.
+   41     │     2. Fallback: Nearest speaker turn within 0.5s tolerance.
+   42     │     3. Grouping: Join words into segments if speaker matches and gap < 2.0s.
+   43     │   Outputs: outputs/karen_final.json, outputs/karen_final.txt
+
+  Detailed Script Audit
+
+  1. Preprocessing Logic
+   * Normalization: Strictly followed EBU R128 (loudnorm) with -20 LUFS target. This is critical for NeMo speaker embeddings which are
+     sensitive to gain drift.
+   * VAD: Used Pyannote 3.1 via pyannote/voice-activity-detection. The script step2_vad_grounding.py applies a 0.15s merge-gap to
+     prevent fragmentation of syllables.
+
+  2. Inference Logic
+   * ASR (step4_whisperx.py): Explicitly disabled condition_on_previous_text to prevent error propagation across VAD boundaries. Word
+     alignment used the whisperx.align engine with language forced to "en".
+   * Diarization (step5_msdd.py): Configured with oracle_vad=True which bypasses NeMo's internal MarbleNet and uses the grounding from
+     Step 2. This is the "Hardened" configuration. It uses a multiscale approach with titanet_large embeddings.
+
+  3. Fusion Logic (step6_fusion.py)
+   * Assignment: Uses temporal intersection. For a word with interval [tₛ, tₑ], it calculates duration( [tₛ, tₑ] ∩ [Tₛ, Tₑ]ᵢ) for all
+     MSDD turns i. The speaker with the largest overlap wins.
+   * Timeline Generation: Formats seconds into HH:MM:SS and maps raw MSDD labels (speaker_0, etc.) to friendly Speaker_N labels.
+
+  4. Evaluation Logic
+   * VAD (step8_vad_eval.py): Frame-based comparison at 10ms resolution.
+   * ASR (step9_asr_eval.py): Standard jiwer WER after full normalization (lower-case, no punctuation).
+   * Diarization (step10_diar_eval.py): Uses pyannote.metrics.diarization.DiarizationErrorRate. It performs optimal speaker mapping
+     (Hungarian algorithm) to find the best match between GT and System labels.
+   * Attribution (step11_attribution_eval.py): Word-level accuracy check. Uses greedy mapping to link System speaker IDs to Ground Truth
+     speaker IDs.
+   * Conversational (step12_13_conversational_eval.py): Computes cpWER by concatenating text per speaker and finding the best
+     permutation match.
+
+  Hyperparameters Used
+   * VAD Merge Gap: 0.15s
+   * Whisper Model: large-v3
+   * Alignment Model: Wav2Vec2 Base (default)
+   * MSDD Max Speakers: 10
+   * MSDD Sigmoid Threshold: 0.7
+   * Fusion Tolerance: 0.5s
+   * Fusion Segment Gap: 2.0s
+
+-----------
