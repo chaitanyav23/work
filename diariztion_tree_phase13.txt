@@ -1,0 +1,21 @@
+experiments/phase13_karen_generalization/diarization/
+├── karen_msdd.rttm
+└── msdd_outputs
+    ├── pred_rttms
+    │   └── karen_normalized.rttm
+    └── speaker_outputs
+        ├── embeddings
+        │   ├── subsegments_scale0_embeddings.pkl
+        │   ├── subsegments_scale1_embeddings.pkl
+        │   ├── subsegments_scale2_embeddings.pkl
+        │   ├── subsegments_scale3_embeddings.pkl
+        │   └── subsegments_scale4_embeddings.pkl
+        ├── oracle_vad_manifest.json
+        ├── subsegments_scale0.json
+        ├── subsegments_scale1.json
+        ├── subsegments_scale2.json
+        ├── subsegments_scale3.json
+        ├── subsegments_scale4.json
+        └── subsegments_scale4_cluster.label
+
+4 directories, 14 files
