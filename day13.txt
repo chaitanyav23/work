@@ -223,3 +223,33 @@
 
 
 -----
+
+┌────────────────────┐
+                │   Raw BWC Audio    │
+                └─────────┬──────────┘
+                          │
+          ┌───────────────┴───────────────┐
+          │                               │
+          ▼                               ▼
+
+ Acoustic Diarization Branch       Linguistic ASR Branch
+
+ DFN Enhancement                   WhisperX ASR
+        ↓                                ↓
+ pyannote VAD                    Word-Level Alignment
+        ↓                                ↓
+ Oracle RTTM                     Semantic Embeddings
+        ↓                                ↓
+ TitaNet Embeddings             Conversational Context
+        ↓                                ↓
+ MSDD Refinement                         │
+          └───────────────┬──────────────┘
+                          ▼
+
+          Multimodal Conversational
+              Attribution Module
+
+                          ↓
+
+           Speaker-Aware Conversational
+                    Timeline
