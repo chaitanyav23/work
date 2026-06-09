@@ -355,3 +355,467 @@ Ultimately, the system aims to model not only:
 “Who spoke when?”
 but:
 “Who said what, in what conversational context, under noisy real-world acoustic conditions?”
+
+
+----
+
+
+Good.
+That is definitely the correct decision.
+
+Improvement 1 alone is already:
+
+technically deep,
+
+experimentally rich,
+
+publishable if done rigorously.
+
+
+And importantly:
+
+Improvement 1 is the foundation for everything else.
+
+Because if the embedding space itself is unstable:
+
+semantic refinement later becomes harder,
+
+MSDD refinement becomes unreliable,
+
+fragmentation propagates everywhere.
+
+
+So focusing first on:
+
+Domain-Adaptive Speaker Embedding Learning
+
+is absolutely the right move.
+
+
+---
+
+Let’s Define EXACTLY What Improvement 1 Is
+
+Right now:
+
+BWC audio
+→ pretrained TitaNet
+→ generic speaker embeddings
+
+Problem: the pretrained embedding manifold is NOT optimized for:
+
+noisy BWC acoustics,
+
+overlap-heavy conversational speech,
+
+short unstable windows,
+
+distant/off-axis speech.
+
+
+This produces:
+
+diffuse manifolds,
+
+weak speaker separability,
+
+fragmentation,
+
+unstable conversational trajectories.
+
+
+Your own PCA/UMAP analysis already demonstrated this.
+
+
+---
+
+So What Are You Actually Trying To Learn?
+
+You are NOT primarily trying to:
+
+“improve clustering”
+
+You are trying to:
+
+Learn a Better Speaker Representation Space
+
+More formally:
+
+You want an embedding function:
+
+f_\theta(x) \rightarrow z
+
+where:
+
+ = audio segment
+
+ = speaker embedding
+
+ = trainable parameters.
+
+
+
+---
+
+Desired Embedding Geometry
+
+You want:
+
+Same speaker
+
+to satisfy:
+
+d(z_i, z_j) \text{ small if same speaker}
+
+
+---
+
+Different speakers
+
+to satisfy:
+
+d(z_i, z_j) \text{ large if different speakers}
+
+even under:
+
+noise,
+
+overlap,
+
+conversational interruptions,
+
+short windows.
+
+
+
+---
+
+THIS Is The Core Scientific Objective
+
+Not:
+
+better DER directly
+
+BUT:
+
+better conversational speaker manifolds
+
+That distinction is VERY important.
+
+
+---
+
+Your Current Experimental Advantage
+
+This is HUGE:
+
+You already built:
+
+PCA analysis,
+
+UMAP analysis,
+
+fragmentation metrics,
+
+trajectory analysis,
+
+transition density metrics.
+
+
+That means: you can now directly evaluate:
+
+Embedding Geometry Improvement
+
+Most papers cannot.
+
+Most only report:
+
+DER,
+
+cpWER.
+
+
+You can report:
+
+manifold compactness,
+
+local continuity,
+
+fragmentation reduction,
+
+embedding stability.
+
+
+This is a BIG advantage.
+
+
+---
+
+The Correct Initial Architecture
+
+Do NOT touch MSDD initially.
+
+This is important.
+
+
+---
+
+Why?
+
+Because MSDD assumes:
+
+embedding space is meaningful
+
+If embeddings improve:
+
+MSDD often improves automatically.
+
+
+So the first target should be:
+
+Fine-Tune TitaNet ONLY
+
+
+---
+
+Your Initial Training Pipeline
+
+Conceptually:
+
+BWC Audio Segments
+        ↓
+Speaker Labels
+        ↓
+TitaNet Encoder
+        ↓
+Embedding Vectors
+        ↓
+Metric Learning Loss
+        ↓
+Backpropagation
+        ↓
+Updated Embedding Space
+
+
+---
+
+What You Need
+
+1. Speaker-Labeled Segments
+
+This is the MOST important thing.
+
+You need:
+
+speaker identities,
+
+timestamps,
+
+RTTMs.
+
+
+Not just:
+
+speech activity
+
+
+---
+
+2. Segment Extraction
+
+From RTTMs:
+
+speaker_0 → audio chunks
+speaker_1 → audio chunks
+...
+
+These become:
+
+supervised training examples.
+
+
+
+---
+
+3. Training Objective
+
+This is VERY important.
+
+
+---
+
+BEST Starting Choice
+
+AAM-Softmax / ArcFace
+
+Why?
+
+Because:
+
+TitaNet already uses this,
+
+highly stable,
+
+excellent for speaker embeddings,
+
+angular-margin separation works VERY well.
+
+
+
+---
+
+Conceptually
+
+The loss forces:
+
+Same speaker
+
+to form:
+
+tight angular clusters
+
+
+---
+
+Different speakers
+
+to become:
+
+angularly separated
+
+This directly improves:
+
+cosine similarity geometry,
+
+clustering quality,
+
+manifold structure.
+
+
+
+---
+
+Your Evaluation Framework After Training
+
+THIS is where your work becomes unique.
+
+After fine-tuning:
+
+you rerun:
+
+1. PCA
+
+2. UMAP
+
+3. Local trajectory analysis
+
+4. Fragmentation analysis
+
+5. Embedding velocity
+
+6. Silhouette scores
+
+7. DER/cpWER
+
+
+---
+
+Then You Compare
+
+BEFORE adaptation
+
+vs
+
+AFTER adaptation.
+
+This is extremely powerful experimentally.
+
+
+---
+
+What You Expect To See
+
+After successful adaptation:
+
+PCA/UMAP
+
+tighter clusters,
+
+reduced diffusion.
+
+
+
+---
+
+Local trajectories
+
+smoother speaker manifolds,
+
+fewer erratic jumps.
+
+
+
+---
+
+Fragmentation
+
+reduced oscillations,
+
+lower fragmentation score.
+
+
+
+---
+
+MSDD outputs
+
+fewer false transitions,
+
+improved continuity.
+
+
+
+---
+
+Your Actual Research Hypothesis
+
+You should now formulate it precisely:
+
+> Pretrained speaker embeddings are insufficiently robust for noisy BWC conversational audio. Domain-adaptive embedding learning can improve local speaker manifold stability, reduce fragmentation, and improve conversational diarization consistency.
+
+
+
+That is strong and precise.
+
+
+---
+
+Most Important Strategic Advice
+
+Do NOT yet:
+
+retrain full MSDD,
+
+build semantic fusion,
+
+build giant multimodal systems.
+
+
+First:
+
+prove the embedding-space hypothesis.
+
+Because your current analyses already strongly suggest:
+
+embedding instability is the dominant bottleneck
+
+especially:
+
+short windows,
+
+overlap-heavy regions,
+
+noisy transitions.
+
+
+That is your strongest immediate scientific direction.
