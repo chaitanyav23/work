@@ -1,0 +1,601 @@
+Yes — now you are thinking about the system correctly at the architectural level.
+
+But there are a few VERY important technical distinctions you need to understand clearly.
+
+Your current intuition is mostly correct, but the exact insertion point in MSDD matters enormously.
+
+
+---
+
+First: What Exactly Comes Out Of TitaNet?
+
+TitaNet outputs:
+
+fixed-dimensional speaker embeddings (“t-vectors”).
+
+Specifically:
+
+192-dimensional embeddings,
+
+extracted BEFORE the final classification layer. 
+
+
+The paper explicitly states:
+
+> “We extract t-vectors before the final logits linear layer of fixed size 192.” 
+
+
+
+So:
+
+audio segment
+→ TitaNet
+→ 192D embedding vector
+
+
+---
+
+What Does MSDD Actually Consume?
+
+This is CRITICAL.
+
+MSDD does NOT directly consume:
+
+raw audio
+
+It consumes:
+
+multiscale speaker embeddings.
+
+Specifically:
+
+embeddings from different window sizes,
+
+grouped across scales,
+
+compared against cluster-average embeddings.
+
+
+The MSDD paper explicitly says:
+
+> “We use the speaker embedding extractor model proposed in [13], which generates 192-dimensional embedding.” 
+
+
+
+And later:
+
+MSDD stacks:
+
+input embeddings,
+
+cluster-average embeddings,
+
+computes cosine similarity,
+
+dynamically weights scales,
+
+then feeds them to the LSTM decoder. 
+
+
+
+---
+
+VERY Important Insight
+
+MSDD is NOT:
+
+embedding model → clustering
+
+ONLY.
+
+It is actually:
+
+Embeddings
+→ Multi-scale clustering initialization
+→ Cluster-average speaker prototypes
+→ Dynamic scale weighting
+→ Similarity context vectors
+→ LSTM sequence decoder
+→ Speaker activity prediction
+
+This matters enormously.
+
+
+---
+
+Your Proposed Fusion System
+
+You are proposing replacing:
+
+single embedding stream
+
+with:
+
+multi-embedding representation stream
+
+This is absolutely possible.
+
+
+---
+
+But You Are Correct About ONE Important Thing
+
+You MUST align dimensions and geometry first.
+
+Because:
+
+TitaNet
+
+outputs 192D embeddings.
+
+
+WeSpeaker ResNet293
+
+Likely outputs:
+
+256D,
+
+or 512D, depending on checkpoint configuration.
+
+
+So:
+
+direct fusion is impossible initially
+
+
+---
+
+Therefore YES:
+
+you need:
+
+representation alignment.
+
+
+---
+
+Correct Fusion Pipeline
+
+The CORRECT architecture is probably:
+
+Audio Segment
+    ↓
+ ┌───────────────┐
+ │               │
+ ↓               ↓
+TitaNet       WeSpeaker
+192D          256D/512D
+ │               │
+ ↓               ↓
+Projection Head Projection Head
+ │               │
+ └──────┬────────┘
+        ↓
+Shared Latent Space
+(e.g. 256D)
+        ↓
+Fusion Module
+        ↓
+Unified Conversational Embedding
+        ↓
+Multi-scale clustering
+        ↓
+MSDD
+
+THAT is the correct architecture.
+
+
+---
+
+VERY Important
+
+Do NOT attempt:
+
+feed raw concatenated embeddings directly into MSDD
+
+initially.
+
+Because MSDD’s:
+
+cosine geometry,
+
+cluster averaging,
+
+scale weighting,
+
+
+all assume:
+
+coherent embedding geometry.
+
+Raw mixed manifolds will likely destabilize clustering.
+
+
+---
+
+Therefore You Need:
+
+Shared latent embedding space.
+
+
+---
+
+Projection Heads
+
+You probably need:
+
+TitaNet projection:
+
+192 → 256
+
+WeSpeaker projection:
+
+512 → 256
+
+Then:
+
+normalize,
+
+align,
+
+fuse.
+
+
+
+---
+
+NOW The Important Question
+
+You asked:
+
+> “Will we need to fine tune the multi embedding model instead of just TitaNet?”
+
+
+
+YES.
+
+ABSOLUTELY YES.
+
+Because otherwise:
+
+the fusion space is meaningless
+
+Initially:
+
+TitaNet manifold,
+
+WeSpeaker manifold,
+
+
+have NEVER been jointly optimized.
+
+So:
+
+distances,
+
+directions,
+
+cosine relationships,
+
+
+are not aligned.
+
+
+---
+
+Therefore:
+
+you need:
+
+joint representation learning.
+
+
+---
+
+What Will Actually Be Trained?
+
+NOT MSDD initially.
+
+Instead:
+
+Stage 1
+
+Freeze:
+
+MSDD,
+
+clustering,
+
+downstream decoder.
+
+
+ONLY train:
+
+fusion layers,
+
+projection heads,
+
+optionally partial backbone adaptation.
+
+
+
+---
+
+Why?
+
+Because MSDD already assumes:
+
+good speaker geometry
+
+Your first task is:
+
+improve speaker geometry.
+
+
+---
+
+Training Objective
+
+YES: you will:
+
+calculate loss,
+
+backpropagate,
+
+optimize embedding space.
+
+
+Exactly.
+
+
+---
+
+But IMPORTANT:
+
+WHAT loss?
+
+This is where your research actually begins.
+
+
+---
+
+Likely Initial Losses
+
+
+---
+
+1. Speaker Classification Loss
+
+Example: AAM-Softmax / ArcFace.
+
+TitaNet itself uses:
+
+additive angular margin loss (AAM). 
+
+WeSpeaker also heavily uses:
+
+margin-based metric learning. 
+
+
+This encourages:
+
+inter-speaker separation.
+
+
+---
+
+2. Contrastive / Triplet Loss
+
+Encourages:
+
+same speaker close,
+
+different speaker far.
+
+
+VERY useful for:
+
+manifold structuring.
+
+
+
+---
+
+3. Conversational Continuity Loss
+
+(YOUR NOVEL PART)
+
+This is the REALLY interesting direction.
+
+You can encourage:
+
+local temporal smoothness,
+
+conversational continuity,
+
+fragmentation resistance.
+
+
+Example:
+
+For neighboring same-speaker windows:
+
+\|z_t - z_{t+1}\|_2^2
+
+should remain small.
+
+This is VERY novel.
+
+
+---
+
+4. Fusion Consistency Loss
+
+Encourage:
+
+TitaNet and WeSpeaker to produce compatible representations.
+
+
+Example conceptual objective:
+
+same speaker
+→ similar fused geometry
+across embedding families
+
+VERY powerful.
+
+
+---
+
+MOST Important Clarification
+
+You said:
+
+> “pass them for clustering initialisation before passing them into msdd”
+
+
+
+YES.
+
+That is correct.
+
+Because MSDD REQUIRES:
+
+initial clustering,
+
+speaker prototypes,
+
+cluster-average embeddings. 
+
+
+Those are central to MSDD.
+
+
+---
+
+Therefore Your Future Pipeline Becomes
+
+Audio
+ ↓
+Multi-Embedding Extraction
+(TitaNet + WeSpeaker)
+ ↓
+Projection + Alignment
+ ↓
+Fusion Representation
+ ↓
+Multiscale Segmentation
+ ↓
+Multiscale Clustering
+ ↓
+Cluster-average prototypes
+ ↓
+MSDD Dynamic Scale Weighting
+ ↓
+LSTM Speaker Decoder
+ ↓
+Speaker Timeline
+
+That is now your actual architecture.
+
+
+---
+
+VERY Important Strategic Advice
+
+DO NOT initially:
+
+retrain MSDD.
+
+That is too unstable.
+
+Instead:
+
+Phase 1
+
+Optimize:
+
+embedding space only.
+
+
+Evaluate:
+
+fragmentation,
+
+continuity,
+
+manifold compactness,
+
+trajectory smoothness.
+
+
+
+---
+
+Phase 2
+
+Replace TitaNet embeddings in MSDD with:
+
+fused embeddings.
+
+
+Then evaluate:
+
+DER,
+
+cpWER,
+
+WDER,
+
+fragmentation reduction.
+
+
+
+---
+
+Phase 3
+
+ONLY IF SUCCESSFUL: consider:
+
+end-to-end MSDD fine-tuning.
+
+
+---
+
+Final Answer
+
+Yes.
+
+Your understanding is now fundamentally correct:
+
+TitaNet outputs 192D speaker embeddings. 
+
+MSDD consumes multiscale embeddings and clustering-derived speaker prototypes. 
+
+Multi-embedding fusion requires dimension alignment and latent-space projection.
+
+Fusion representations should be optimized jointly.
+
+You will need:
+
+loss computation,
+
+backpropagation,
+
+embedding-space optimization,
+
+manifold alignment,
+
+conversational regularization.
+
+
+Initial training should target:
+
+projection heads,
+
+fusion layers,
+
+optionally partial backbone adaptation.
+
+
+MSDD itself should remain frozen initially.
