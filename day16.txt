@@ -599,3 +599,721 @@ optionally partial backbone adaptation.
 
 
 MSDD itself should remain frozen initially.
+
+
+-----------
+
+
+
+You are now thinking at a very high architectural level.
+
+And honestly, you already understand about 70–80% of the system correctly.
+
+What you are currently missing are the HARD parts that make research systems difficult:
+
+1. Temporal Alignment
+
+2. Multiscale Consistency
+
+3. Geometry Compatibility
+
+4. Label Supervision Structure
+
+5. Training Stability
+
+6. MSDD Dependency Assumptions
+
+7. Overlap Handling
+
+8. Dataset Scale Constraints
+
+9. Representation Collapse Risks
+
+10. Evaluation Leakage
+
+These are the real research problems now.
+
+Let’s go through the important ones carefully.
+
+
+---
+
+1. You Are Thinking “Embedding”
+
+But MSDD Thinks “MULTISCALE TEMPORAL EMBEDDING”
+
+This is the BIGGEST thing you are currently underestimating.
+
+MSDD is NOT simply:
+
+embedding → clustering
+
+It is:
+
+multiscale temporal embedding consistency
+
+The MSDD paper repeatedly emphasizes:
+
+scale grouping,
+
+base-scale alignment,
+
+dynamic scale weighting. 
+
+
+Meaning:
+
+embeddings across scales must remain temporally compatible.
+
+
+---
+
+Why This Becomes HARD In Fusion
+
+Suppose:
+
+TitaNet
+
+is stable at:
+
+long windows.
+
+
+WeSpeaker
+
+is stable at:
+
+short windows.
+
+
+Now your fusion changes with scale.
+
+This means:
+
+fusion behavior becomes scale-dependent
+
+That is a HUGE issue.
+
+You may need:
+
+scale-aware fusion.
+
+NOT:
+
+single universal fusion
+
+
+---
+
+2. You Are Missing The “Cluster Prototype” Dependency
+
+MSDD does NOT directly compare embeddings to embeddings.
+
+It compares:
+
+current embeddings, against:
+
+cluster-average speaker prototypes. 
+
+
+This is CRITICAL.
+
+
+---
+
+Meaning
+
+If your fused embedding geometry becomes unstable:
+
+then:
+
+cluster-average prototypes become unstable
+
+which destroys:
+
+cosine similarity reliability,
+
+scale weighting quality,
+
+LSTM decoding stability.
+
+
+
+---
+
+Therefore
+
+You are NOT merely optimizing:
+
+embedding separability
+
+You are ALSO optimizing:
+
+prototype stability.
+
+That is VERY different.
+
+
+---
+
+3. You Are Missing Cross-Model Geometry Incompatibility
+
+This is HUGE.
+
+TitaNet and WeSpeaker are trained:
+
+differently,
+
+with different losses,
+
+different augmentations,
+
+different pooling strategies,
+
+different speaker manifolds.
+
+
+Therefore:
+
+cosine geometry is NOT directly compatible
+
+Even after projection.
+
+
+---
+
+Meaning
+
+Suppose:
+
+TitaNet cosine
+
+0.82 = same speaker.
+
+But:
+
+WeSpeaker cosine
+
+0.82 may NOT represent equivalent confidence.
+
+This breaks:
+
+clustering thresholds,
+
+affinity estimation,
+
+scale weighting.
+
+
+
+---
+
+Therefore You Need
+
+Probably:
+
+geometry normalization.
+
+Maybe:
+
+temperature scaling,
+
+learned normalization,
+
+manifold calibration.
+
+
+You are currently missing this.
+
+
+---
+
+4. You Are Missing The REAL Difficulty:
+
+Unknown-Speaker Conversational Training
+
+This is probably the hardest conceptual problem.
+
+
+---
+
+During Training
+
+You have:
+
+speaker IDs
+
+Example:
+
+speaker_1
+
+speaker_2
+
+speaker_3
+
+
+
+---
+
+During Inference
+
+MSDD sees:
+
+completely unseen speakers
+
+So: you are NOT training:
+
+speaker memorization.
+
+You are training:
+
+speaker manifold generalization.
+
+VERY important distinction.
+
+
+---
+
+Meaning
+
+Your loss cannot merely optimize:
+
+classification
+
+It must optimize:
+
+transferable geometry.
+
+This is why:
+
+contrastive learning,
+
+metric learning, matter so much.
+
+
+
+---
+
+5. You Are Missing Overlap Complexity
+
+This is a MASSIVE issue.
+
+BWC conversations contain:
+
+simultaneous speech,
+
+interruptions,
+
+partial overlaps,
+
+backchannels.
+
+
+Example:
+
+Speaker A:
+"Can you—"
+
+Speaker B:
+"Yeah yeah I understand."
+
+
+---
+
+Problem
+
+The embedding extracted from overlap regions may represent:
+
+mixture manifolds
+
+NOT pure speakers.
+
+This creates:
+
+cluster instability,
+
+manifold diffusion,
+
+fragmentation.
+
+
+
+---
+
+VERY Important Question
+
+Do you:
+
+train on overlap? or
+
+exclude overlap?
+
+
+This becomes a MAJOR research decision.
+
+You are currently missing this completely.
+
+
+---
+
+6. You Are Missing The Data Problem
+
+You currently mentioned:
+
+1–10 hours
+
+This is VERY small.
+
+Remember: TitaNet was trained on:
+
+millions of utterances,
+
+16k+ speakers. 
+
+
+So: full backbone retraining will overfit HARD.
+
+
+---
+
+Therefore
+
+You likely need:
+
+parameter-efficient adaptation.
+
+Possibilities:
+
+LoRA,
+
+adapter layers,
+
+projection-only training,
+
+partial freezing.
+
+
+You are currently thinking:
+
+full retraining
+
+which is risky.
+
+
+---
+
+7. You Are Missing Negative Sampling Strategy
+
+This is HUGE in metric learning.
+
+
+---
+
+Which negatives matter?
+
+Not random speakers.
+
+The IMPORTANT negatives are:
+
+acoustically confusing conversational negatives.
+
+Example:
+
+same room,
+
+same microphone,
+
+similar loudness,
+
+overlapping speech,
+
+conversational adjacency.
+
+
+These create:
+
+hard negatives
+
+Your training quality depends heavily on this.
+
+
+---
+
+8. You Are Missing Temporal Correlation Leakage
+
+VERY important experimentally.
+
+Suppose:
+
+train uses same conversation,
+
+test uses nearby chunks.
+
+
+Then:
+
+manifold continuity artificially improves
+
+You accidentally leak:
+
+acoustic environment,
+
+speaker style,
+
+conversational structure.
+
+
+This produces fake generalization.
+
+VERY common research mistake.
+
+
+---
+
+9. You Are Missing The Difference Between:
+
+Better Embeddings
+
+and
+
+Better Diarization
+
+This is the MOST important conceptual gap.
+
+Better embeddings do NOT always improve diarization.
+
+The GitHub issue you found demonstrated this directly.
+
+Why?
+
+Because diarization depends on:
+
+clustering,
+
+temporal smoothing,
+
+overlap handling,
+
+prototype stability,
+
+sequence decoding.
+
+
+NOT just:
+
+embedding compactness
+
+
+---
+
+Meaning
+
+You need:
+
+task-aware representation learning.
+
+NOT merely:
+
+speaker verification optimization
+
+
+---
+
+10. You Are Missing The Most Important Question:
+
+What EXACTLY Is Your Optimization Target?
+
+This is the BIGGEST missing piece.
+
+Currently you are simultaneously trying to optimize:
+
+speaker identity,
+
+continuity,
+
+fragmentation,
+
+overlap robustness,
+
+clustering stability,
+
+temporal smoothness.
+
+
+These objectives may CONFLICT.
+
+Example:
+
+Too much smoothness
+
+→ speaker merging.
+
+Too much separability
+
+→ fragmentation.
+
+This becomes:
+
+multi-objective optimization.
+
+VERY hard.
+
+
+---
+
+MOST Important Strategic Advice
+
+Your biggest risk right now is:
+
+trying to solve too many things simultaneously.
+
+Do NOT initially attempt:
+
+multi-embedding
++
+fusion
++
+continuity loss
++
+MSDD retraining
++
+semantic modeling
++
+overlap modeling
+
+That will become impossible to debug.
+
+
+---
+
+Correct Research Strategy
+
+Stage 1
+
+Baseline:
+
+frozen TitaNet,
+
+current MSDD.
+
+
+
+---
+
+Stage 2
+
+Compare:
+
+TitaNet vs
+
+WeSpeaker.
+
+
+ONLY analysis.
+
+No fusion yet.
+
+
+---
+
+Stage 3
+
+Introduce:
+
+simple projection fusion.
+
+No attention.
+
+
+---
+
+Stage 4
+
+Fine-tune:
+
+projection heads only.
+
+
+NOT entire backbones.
+
+
+---
+
+Stage 5
+
+Evaluate:
+
+manifold continuity,
+
+fragmentation,
+
+cpWER,
+
+DER.
+
+
+
+---
+
+Stage 6
+
+ONLY THEN: explore:
+
+attention fusion,
+
+continuity losses,
+
+partial backbone adaptation.
+
+
+
+---
+
+Final Answer
+
+What you are currently missing is not:
+
+model architecture.
+
+You already understand that surprisingly well.
+
+What you are missing are:
+
+the geometric,
+
+optimization,
+
+temporal,
+
+and training-dynamics constraints
+
+that make conversational diarization representation learning extremely hard.
+
+The biggest conceptual gaps are:
+
+1. MSDD depends on multiscale prototype geometry, not just embeddings.
+
+
+2. Different embedding families have incompatible manifolds.
+
+
+3. Better embeddings ≠ better diarization automatically.
+
+
+4. Conversational continuity and speaker separability can conflict.
+
+
+5. Overlap speech fundamentally corrupts embedding geometry.
+
+
+6. Small-data adaptation is extremely unstable.
+
+
+7. Metric learning quality depends heavily on hard-negative strategy.
+
+
+8. Your optimization target is currently underdefined.
+
+
+
+Those are the REAL research problems now.
