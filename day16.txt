@@ -1317,3 +1317,759 @@ The biggest conceptual gaps are:
 
 
 Those are the REAL research problems now.
+
+
+----------
+
+
+
+:::writing{variant="document" id="58241"}
+
+Strategic Research and System Design Plan
+
+Multi-Embedding Conversational Speaker Representation Learning for Noisy BWC Diarization
+
+Core Objective
+
+The objective is NOT merely to improve speaker verification accuracy or speaker classification performance.
+
+The real objective is:
+
+reduce speaker confusion,
+
+improve speaker attribution consistency,
+
+improve overlap robustness,
+
+stabilize conversational timelines,
+
+reduce diarization fragmentation,
+
+improve downstream conversational alignment metrics:
+
+DER,
+
+cpWER,
+
+SA-WER,
+
+WDER.
+
+
+
+The final deliverable is: a more stable and accurate speaker-attributed conversational timeline after fusion with ASR outputs.
+
+Therefore: the optimization target is NOT generic embedding quality.
+
+The optimization target is:
+
+task-aware conversational diarization representation learning.
+
+
+---
+
+High-Level System Goal
+
+Current system:
+
+Raw Audio → TitaNet Embeddings → Clustering Initialization → MSDD → Speaker Timeline → ASR Fusion → Conversational Timeline
+
+Proposed future system:
+
+Raw Audio → Multi-Embedding Extraction → Shared Latent Conversational Space → Scale-Aware Fusion → Stable Prototype Formation → MSDD → Speaker Timeline → ASR Fusion → Improved Conversational Attribution
+
+
+---
+
+Core Research Problem
+
+Current pretrained speaker embeddings fail under:
+
+noisy BWC acoustics,
+
+overlap-heavy conversation,
+
+short conversational windows,
+
+distant/off-axis speech.
+
+
+This causes:
+
+speaker confusion,
+
+fragmented trajectories,
+
+unstable clustering,
+
+conversational discontinuity,
+
+overlap instability.
+
+
+The hypothesis is that: speaker diarization failure under noisy conversational BWC audio is fundamentally linked to unstable conversational embedding geometry.
+
+
+---
+
+CRITICAL DESIGN REQUIREMENTS
+
+The following constraints MUST be addressed simultaneously:
+
+1. Embedding separability
+
+
+2. Prototype stability
+
+
+3. Cross-model geometry compatibility
+
+
+4. Scale-aware multiscale consistency
+
+
+5. Transferable speaker manifold learning
+
+
+6. Overlap robustness
+
+
+7. Small-data generalization
+
+
+8. Hard-negative robustness
+
+
+9. Temporal leakage prevention
+
+
+10. Conversational continuity stability
+
+
+
+This is NOT a standard speaker verification problem.
+
+
+---
+
+Proposed System Architecture
+
+Stage 1 — Multi-Embedding Extraction
+
+Each audio subsegment is passed through multiple embedding backbones.
+
+Example:
+
+Audio Segment → TitaNet → 192D embedding → WeSpeaker ResNet293 → 256D/512D embedding
+
+Purpose: capture complementary speaker geometries.
+
+Reason: different embedding families may exhibit:
+
+different robustness to overlap,
+
+different robustness to noise,
+
+different temporal stability characteristics.
+
+
+
+---
+
+Stage 2 — Geometry Alignment Layer
+
+CRITICAL PROBLEM: TitaNet and WeSpeaker embeddings exist in incompatible geometric spaces.
+
+Therefore: raw fusion is unsafe.
+
+Solution: introduce projection/alignment heads.
+
+Example:
+
+TitaNet: 192 → 256 latent projection
+
+WeSpeaker: 512 → 256 latent projection
+
+Both embeddings are normalized into:
+
+a shared conversational latent space.
+
+Purpose:
+
+stabilize cosine geometry,
+
+preserve clustering reliability,
+
+maintain prototype consistency,
+
+prevent scale-weighting instability.
+
+
+
+---
+
+Stage 3 — Scale-Aware Fusion
+
+A single universal fusion strategy is insufficient because: different embedding backbones may behave differently at different temporal scales.
+
+Therefore: fusion MUST be:
+
+scale-aware.
+
+Example concept:
+
+Long windows:
+
+higher trust in stable identity embeddings.
+
+
+Short windows:
+
+higher trust in temporally responsive embeddings.
+
+
+Possible implementations:
+
+learned scale-specific projection heads,
+
+scale-conditioned gating,
+
+lightweight attention fusion,
+
+dynamic reliability weighting.
+
+
+IMPORTANT: initial implementation should remain SIMPLE.
+
+Recommended initial strategy:
+
+scale-specific linear projection fusion, NOT full transformer attention initially.
+
+
+Reason: small-data regime (~1 hour) makes complex fusion unstable.
+
+
+---
+
+Stage 4 — Prototype-Stable Representation Learning
+
+MSDD depends heavily on:
+
+cluster-average embeddings,
+
+cosine similarity reliability,
+
+stable prototype formation.
+
+
+Therefore: the objective is NOT merely: embedding separability.
+
+The objective is ALSO:
+
+prototype stability.
+
+Training should optimize:
+
+intra-speaker compactness,
+
+inter-speaker separability,
+
+cluster-center stability,
+
+local conversational continuity.
+
+
+Poor prototype stability will:
+
+destroy cosine similarity reliability,
+
+destabilize scale weighting,
+
+degrade LSTM decoding consistency.
+
+
+
+---
+
+Stage 5 — MSDD Integration
+
+The fused conversational embeddings are then used for:
+
+multiscale clustering initialization,
+
+speaker prototype construction,
+
+MSDD similarity computation,
+
+temporal speaker decoding.
+
+
+IMPORTANT: MSDD itself remains frozen initially.
+
+Reason: the first research target is:
+
+conversational embedding geometry.
+
+Not: full end-to-end diarization retraining.
+
+
+---
+
+Training Strategy
+
+PRIMARY OBJECTIVE
+
+Learn:
+
+transferable conversational speaker manifolds.
+
+NOT: speaker memorization.
+
+Reason: inference speakers are unseen.
+
+Therefore: the model must generalize speaker geometry, not memorize speaker identities.
+
+
+---
+
+Proposed Loss Strategy
+
+The training objective should combine multiple components.
+
+
+---
+
+1. Metric Learning Objective
+
+Purpose: learn transferable speaker geometry.
+
+Recommended:
+
+AAM-Softmax / ArcFace
+
+Supervised Contrastive Loss
+
+
+Reason: these optimize:
+
+angular separability,
+
+manifold compactness,
+
+transferable geometry.
+
+
+
+---
+
+2. Conversational Continuity Regularization
+
+Purpose: reduce fragmentation.
+
+Concept: neighboring same-speaker embeddings should evolve smoothly through latent space.
+
+Goal: reduce:
+
+abrupt manifold jumps,
+
+unstable conversational trajectories,
+
+speaker oscillation.
+
+
+IMPORTANT: must avoid oversmoothing.
+
+Too much smoothness may:
+
+merge speakers,
+
+suppress real transitions.
+
+
+
+---
+
+3. Prototype Stability Loss
+
+Purpose: stabilize cluster-average embeddings.
+
+Goal: reduce:
+
+prototype drift,
+
+clustering instability,
+
+MSDD similarity corruption.
+
+
+Potential idea: encourage stable centroid consistency across neighboring windows.
+
+
+---
+
+4. Cross-Model Consistency Loss
+
+Purpose: align TitaNet and WeSpeaker geometry.
+
+Goal: ensure: same-speaker embeddings from different backbones remain compatible.
+
+This improves:
+
+fusion coherence,
+
+clustering reliability,
+
+scale consistency.
+
+
+
+---
+
+Overlap Modeling Strategy
+
+Overlap is a CORE requirement, not an edge case.
+
+BWC audio contains:
+
+interruptions,
+
+simultaneous speech,
+
+backchannels,
+
+partial overlaps.
+
+
+Ignoring overlap will:
+
+destroy real-world usability.
+
+
+
+---
+
+Proposed Overlap Strategy
+
+DO NOT initially remove overlap regions.
+
+Instead: explicitly tag:
+
+clean speech,
+
+partial overlap,
+
+heavy overlap.
+
+
+Train the model to:
+
+recognize overlap instability,
+
+preserve speaker continuity despite overlap.
+
+
+Possible future extensions:
+
+overlap-aware gating,
+
+confidence-aware fusion,
+
+overlap-conditioned projection heads.
+
+
+
+---
+
+Small-Data Generalization Strategy
+
+Available labeled data: ~1 hour.
+
+This is EXTREMELY small.
+
+Full backbone retraining will likely overfit.
+
+Therefore: use:
+
+parameter-efficient adaptation.
+
+Recommended:
+
+freeze most backbone layers,
+
+train lightweight projection heads,
+
+train fusion layers,
+
+optionally use LoRA/adapters later.
+
+
+Heavy end-to-end retraining should be avoided initially.
+
+
+---
+
+Hard Negative Sampling Strategy
+
+Random negatives are insufficient.
+
+The important negatives are:
+
+acoustically confusing conversational negatives.
+
+Examples:
+
+same room,
+
+same microphone,
+
+similar loudness,
+
+nearby conversational turns,
+
+overlap-adjacent windows.
+
+
+These are:
+
+hard negatives.
+
+Training should deliberately sample:
+
+nearby confusing speakers,
+
+overlap-heavy transitions,
+
+acoustically similar segments.
+
+
+Purpose: improve conversational robustness.
+
+
+---
+
+Temporal Correlation Leakage Prevention
+
+This is CRITICAL.
+
+Train/test leakage can occur if:
+
+nearby chunks from the same conversation appear in both sets.
+
+
+This artificially inflates:
+
+continuity,
+
+clustering quality,
+
+manifold smoothness.
+
+
+Therefore: splits MUST occur:
+
+at conversation/session level.
+
+NOT: random segment level.
+
+
+---
+
+Task-Aware Representation Learning
+
+The objective is NOT: speaker verification optimization.
+
+The objective is:
+
+conversational diarization optimization.
+
+Therefore: evaluation must measure:
+
+fragmentation,
+
+continuity,
+
+overlap robustness,
+
+prototype stability,
+
+conversational consistency.
+
+
+NOT merely:
+
+classification accuracy,
+
+EER.
+
+
+
+---
+
+Representation-Level Evaluation Framework
+
+Evaluation MUST include:
+
+Geometric Metrics
+
+PCA
+
+UMAP
+
+silhouette score
+
+intra/inter-speaker distance
+
+manifold compactness
+
+
+Conversational Metrics
+
+fragmentation score
+
+embedding velocity
+
+transition density
+
+local continuity metrics
+
+trajectory smoothness
+
+
+Diarization Metrics
+
+DER
+
+confusion percentage
+
+miss
+
+false alarm
+
+
+Conversational Attribution Metrics
+
+cpWER
+
+SA-WER
+
+WDER
+
+
+The final goal is: improved conversational attribution after ASR fusion.
+
+
+---
+
+Experimental Roadmap
+
+Phase 1
+
+Baseline analysis:
+
+TitaNet alone
+
+WeSpeaker alone
+
+
+Compare:
+
+manifold geometry,
+
+overlap robustness,
+
+fragmentation behavior.
+
+
+
+---
+
+Phase 2
+
+Introduce:
+
+shared latent projections,
+
+scale-aware fusion.
+
+
+Keep MSDD frozen.
+
+
+---
+
+Phase 3
+
+Train:
+
+projection heads,
+
+fusion layers,
+
+continuity regularization.
+
+
+Evaluate:
+
+geometry stability,
+
+prototype stability,
+
+fragmentation reduction.
+
+
+
+---
+
+Phase 4
+
+Inject fused embeddings into MSDD.
+
+Evaluate:
+
+DER,
+
+confusion reduction,
+
+cpWER,
+
+WDER,
+
+conversational timeline quality.
+
+
+
+---
+
+Phase 5
+
+ONLY if stable: explore:
+
+partial backbone adaptation,
+
+overlap-aware gating,
+
+conversational attention fusion,
+
+end-to-end refinement.
+
+
+
+---
+
+Final Research Framing
+
+This work is NOT: “using multiple embeddings.”
+
+This work is:
+
+conversationally stable multi-view speaker representation learning for noisy real-world diarization.
+
+The primary scientific contribution is: joint optimization of:
+
+conversational manifold stability,
+
+prototype consistency,
+
+overlap robustness,
+
+transferable speaker geometry, under noisy BWC conversational conditions. :::
