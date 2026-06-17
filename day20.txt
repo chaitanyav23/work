@@ -1,0 +1,49 @@
+✦ To start fresh on a new Brev instance with the current state of the project, follow these steps in order:
+
+  1. Clone the Repository
+  Since we converted the submodules into local directories and pushed everything to the chaitanya branch, a standard
+  clone will get you everything you need:
+
+   1 git clone -b chaitanya https://github.com/chaitanyav23/marston.git
+   2 cd marston
+
+  2. Set Up the Environment
+  You will need to recreate your Python environment and install the dependencies. Since we localized WhisperX and
+  Silero-VAD, the main requirements.txt (or the individual ones in external/) will guide you:
+
+   1 # Create and activate a virtual environment
+   2 python3 -m venv venv
+   3 source venv/bin/activate
+   4
+   5 # Install main project requirements
+   6 pip install -r requirements.txt
+   7
+   8 # Install localized WhisperX requirements
+   9 pip install -r external/WhisperX-Audio-Intelligence-Platform/requirements.txt
+
+  3. Configure Credentials (Critical)
+  You still need to provide your Hugging Face token for diarization to work. Create a .env file in the root and in the
+  localized WhisperX directory:
+
+   1 # Root .env
+   2 echo "HF_TOKEN=your_hugging_face_token_here" > .env
+   3
+   4 # WhisperX .env (where the code specifically looks for it)
+   5 cp .env external/WhisperX-Audio-Intelligence-Platform/.env
+
+  4. Verify Localized Dependencies
+  Because we removed the .git folders from external/silero-vad and external/WhisperX-Audio-Intelligence-Platform, they
+  are now just regular folders in your repo. You don't need to run git submodule update --init. You can verify they are
+  ready by checking for the model files:
+
+   1 ls external/silero-vad/src/silero_vad/data/  # Should show .onnx files
+   2 ls external/WhisperX-Audio-Intelligence-Platform/pipeline.py # Should exist
+
+  5. Run a Quick Validation
+  Run one of the check scripts to ensure the VAD and environment are working correctly:
+
+   1 python test_silero.py
+
+  Why this is easier now:
+  By localizing the dependencies, you no longer have to worry about broken submodule links or detached HEAD states.
+  Everything "just works" as soon as you clone and install the python packages.
