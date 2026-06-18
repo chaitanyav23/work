@@ -1,0 +1,210 @@
+The main files to look at are:
+ 
+1. vad_eval/synthesis.py
+
+   - Contains the core audio augmentation logic.
+
+   - Loads clean speech and noise audio.
+
+   - Converts audio to mono 16 kHz.
+
+   - Selects a matching-length noise segment.
+
+   - Scales the noise to a target SNR.
+
+   - Mixes speech and noise.
+
+   - Applies final gain normalization to avoid clipping.
+
+   - Writes the augmented WAV file and manifest metadata.
+ 
+2. scripts/02_build_synthetic_dataset.py
+
+   - Command-line script for building the synthetic QUT/LibriSpeech-style
+
+     augmented dataset.
+
+   - Calls vad_eval.synthesis.synthesize_dataset().
+ 
+3. vad_eval/ms_snsd_phase2.py
+
+   - Builds a clean/noisy MS-SNSD validation/training-style dataset.
+
+   - Uses clean speech from MS-SNSD and mixes it with non-speech noise.
+
+   - Creates clean entries plus noisy versions at multiple SNR levels.
+
+   - Writes a manifest CSV with all generated audio paths and metadata.
+ 
+4. scripts/07_build_ms_snsd_phase2.py
+
+   - Command-line entry point for the MS-SNSD clean/noisy dataset builder.
+ 
+ 
+How the augmentation works
+
+--------------------------
+ 
+For each clean speech file:
+ 
+1. Load the clean speech audio.
+
+2. Convert it to mono 16 kHz if needed.
+
+3. Select a background noise file.
+
+4. Choose a deterministic offset inside the noise file, so the run is
+
+   reproducible.
+
+5. Cut or wrap the noise so it has the same duration as the clean speech.
+
+6. Measure RMS energy of both speech and noise.
+
+7. Scale the noise according to the target SNR.
+
+8. Mix the clean speech and scaled noise.
+
+9. Normalize the final mixture so it does not clip.
+
+10. Save the output as a 16 kHz PCM WAV file.
+
+11. Add one row to the manifest CSV with:
+
+    - generated audio path
+
+    - clean speech path
+
+    - noise path
+
+    - SNR value
+
+    - duration
+
+    - final gain
+
+    - noise scale
+
+    - reference label path when available
+ 
+ 
+SNR levels
+
+----------
+ 
+For the MS-SNSD phase-2 builder, the noisy versions are generated at:
+ 
+- 20 dB
+
+- 10 dB
+
+- 5 dB
+
+- 0 dB
+
+- -5 dB
+ 
+The clean version is also kept, so each selected clean utterance produces:
+ 
+- 1 clean sample
+
+- 5 noisy samples
+ 
+That gives 6 total audio entries per clean utterance.
+ 
+ 
+How we are making the 4-hour dataset
+
+---------------------------------------------
+ 
+The goal is to generate enough clean/noisy audio entries so that the total
+
+duration is around 4 hours.
+ 
+4 hours = 4 * 60 * 60 = 14,400 seconds of audio.
+ 
+The process is:
+ 
+1. Start with clean speech files.
+
+2. For each clean file, generate augmented noisy versions using background
+
+   noise at the selected SNR levels.
+
+3. Keep the original clean version too.
+
+4. Track the duration of every clean and generated noisy file.
+
+5. Keep adding files to the training manifest until the accumulated duration
+
+   reaches about 14,400 seconds.
+
+6. Use the manifest CSV as the final training file list.
+ 
+Example:
+ 
+If one clean utterance is 5 seconds long, then with 1 clean version and
+
+5 noisy versions, that utterance contributes:
+ 
+5 seconds * 6 versions = 30 seconds total audio.
+ 
+So the builder repeats this over many clean utterances until the total
+
+duration reaches approximately 4 hours.
+ 
+ 
+What gets shared
+
+----------------
+ 
+The shared archive contains only code and instructions, not the large audio
+
+datasets or generated WAV files.
+ 
+Archive name:
+ 
+vad_augmentation_code.tar.gz
+ 
+It contains:
+ 
+- vad_eval/
+
+- scripts/02_build_synthetic_dataset.py
+
+- scripts/07_build_ms_snsd_phase2.py
+
+- requirements.txt
+
+- README.md
+ 
+ 
+How to run the MS-SNSD builder
+
+------------------------------
+ 
+Example command:
+ 
+VADtesting/bin/python scripts/07_build_ms_snsd_phase2.py \
+
+  --dataset-root MS-SNSD/dataset \
+
+  --output-root MS-SNSD/phase2 \
+
+  --manifest MS-SNSD/phase2/manifest.csv \
+
+  --limit 200 \
+
+  --seed 2026
+ 
+This creates clean and noisy WAV files under the output directory and writes
+
+a manifest CSV describing the generated dataset.
+ 
+ 
+
+
+  I am augmenting the data by mixing clean speech with background noise at controlled SNR levels. The code loads speech and noise, converts them to mono 16 kHz, scales the noise to the required SNR, mixes it with speech, normalizes the output to avoid clipping, and saves the generated WAV file. For the 4-hour dataset, we have to keep generating clean/noisy samples and tracking their durations in a manifest until the total audio duration is about 14,400 seconds.
+
+
+    
