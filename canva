@@ -1,3 +1,55 @@
 https://canva.link/xkxhyqgvhynzfku
 
 https://exlservicenam-my.sharepoint.com/:w:/g/personal/shudhant332949_exlservice_com/IQC2YaDtiMiOSp0L-V3zS2b5AcaI2NUJqNJTrUa2k97sWNU?e=SEB6yQ
+
+1. Title 
+
+Design and Development of a Speaker-Aware ASR Pipeline for Body-Worn Camera Audio 
+
+2. Abstract 
+
+Body-worn camera audio is a challenging and under-researched domain for automatic speech recognition because it combines conversational speech with outdoor noise, movement, changing microphone distance, interruptions, overlapping speakers, and short context-dependent utterances. This research investigates the design requirements for a practical speaker-aware ASR system in this domain, where existing research and ready-made solutions remain limited. The study examines the full audio processing path, including audio extraction, preprocessing, voice activity detection, speaker diarization, automatic speech recognition, transcript formatting, and evaluation against ground truth. The technical approach considers how ASR systems operate in controlled conditions, how conversational ASR differs from single-speaker transcription, and how recognition quality changes in uncontrolled outdoor environments. The research draws on pyannote diarization, NVIDIA Riva ASR, NVIDIA Parakeet, Sortformer diarization, MarbleNet VAD, DeepFilterNet enhancement, and custom comparison tooling to develop an audio pipeline suited to body-worn camera recordings. The findings indicate that body-worn camera audio should be treated as a specialized conversational ASR problem rather than a standard transcription task. Clean conversational recordings produce stronger results, while body-worn camera style recordings expose persistent challenges in speaker attribution, missed short utterances, noise handling, and diarization boundaries. This paper presents the research motivation, system design, technical decisions, and remaining challenges for reliable speaker-aware transcription of body-worn camera audio. 
+
+3. Keywords 
+
+Body-worn camera audio; automatic speech recognition; conversational ASR; outdoor speech recognition; speaker diarization; voice activity detection; noisy speech processing; speaker-aware transcription; ASR system design; Sortformer 
+
+4. Introduction 
+
+Automatic Speech Recognition, or ASR, is widely used to convert spoken language into written text. Many ASR systems perform well on clean recordings, dictation, interviews, and studio-style conversational audio. Body-worn camera recordings present a more difficult setting because they capture speech in uncontrolled environments where the microphone moves with the officer, speaker distance changes continuously, and important utterances may be short, interrupted, shouted, or mixed with background noise. 
+
+This research addresses the problem of speaker-aware transcription for body-worn camera audio. The research considers ASR from multiple levels: the general operation of speech recognition systems, the added complexity of conversational speech, and the degradation that occurs when conversation takes place outdoors or in noisy public environments. This framing is necessary because body-worn camera recordings combine conversational dynamics with difficult acoustic conditions. 
+
+The focus of the research is converting noisy body-worn camera recordings into text while preserving who spoke and when. This distinction is important because a transcript that recognizes words but assigns them to the wrong speaker may be misleading in operational or compliance review. The problem is therefore broader than simple word recognition and requires attention to segmentation, speaker attribution, voice activity detection, diarization, and audio quality. 
+
+Body-worn camera audio can support review of compliance, escalation, safety, visit outcomes, and operational decision-making. However, the domain is difficult because recordings may contain wind, traffic noise, sirens, clothing rustle, microphone friction, radio chatter, overlapping speakers, far-field civilian speech, and rapid speaker changes. The officer is usually close to the microphone, while other speakers may be distant or masked by the environment. These conditions can cause missed speech, false speech detections, poor speaker boundaries, and officer/non-officer speaker confusion. 
+
+The purpose of this research is to identify and develop an audio processing pipeline appropriate for body-worn camera recordings. Rather than treating the task as a simple selection of an off-the-shelf ASR model, the research examines the design choices required for this domain, including preprocessing, VAD, diarization, ASR model selection, transcript structure, and evaluation methodology. The paper presents the rationale behind these choices and describes the limitations that remain because body-worn camera audio is still a relatively under-explored ASR use case. 
+
+5. Research Gap and Motivation 
+
+Automatic Speech Recognition has advanced significantly in recent years, particularly for clean speech, dictation, meeting transcription, call-center recordings, and general conversational audio. Many modern ASR systems can produce accurate transcripts when the recording conditions are controlled, the microphone is stable, and the speech signal is clear. However, body-worn camera audio represents a more complex and less explored environment. It combines conversational speech with outdoor noise, movement, unstable microphone placement, overlapping speakers, short utterances, and rapid changes in speaker distance. 
+
+Existing ASR work often focuses on word-level transcription accuracy, but body-worn camera audio requires more than a plain transcript. In operational review, it is important to know not only what was said, but also who said it, when it was said, and whether any speech was missed or incorrectly assigned. A transcription system that produces words without reliable speaker attribution can be insufficient or misleading, especially in scenarios involving compliance, escalation, safety, and post-incident review. 
+
+This creates a research gap between general-purpose ASR systems and the requirements of body-worn camera audio analysis. Body-worn camera recordings require a pipeline that combines multiple audio intelligence components, including voice activity detection, preprocessing, speaker diarization, ASR, transcript structuring, and error-aware evaluation. Each component affects the final transcript quality. For example, poor VAD can remove short but meaningful replies, diarization errors can merge officer and civilian speech, and ASR errors can distort the actual content of an interaction. 
+
+The motivation for this project is to move beyond basic transcription toward speaker-aware operational conversational intelligence for body-worn camera audio. Instead of treating ASR as a standalone task, this work investigates how different audio processing stages can be combined into a structured pipeline suitable for noisy, real-world enforcement recordings. This is especially important because existing research on body-worn-camera-specific ASR and diarization remains limited compared with research on cleaner conversational speech. 
+
+6. Research Questions and Contributions 
+
+Explain that the work started from understanding ASR basics. 
+
+Mention conversational ASR and why speaker changes matter. 
+
+Show that outdoor conversation is harder than clean audio. 
+
+Explain why BWC audio is different from normal ASR datasets. 
+
+Include the idea of operational conversational intelligence. 
+
+Mention VAD, diarization, ASR, preprocessing, and evaluation metrics. 
+
+ 
+
+ 
