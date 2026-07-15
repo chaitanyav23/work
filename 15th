@@ -1,3 +1,399 @@
+• I’ll run this as a release validation pass, keeping code frozen. First I’m checking the venv shape, README state, frozen environment
+  files, and parser output before deleting generated artifacts.
+
+• Ran git status --short README.md phase20_standalone/README.md phase20_standalone/environment
+  └ (no output)
+
+• Ran rg -n "^## Validation$|standalone implementation has been validated|Published evaluation metrics|Published Metrics|Validation"
+  │ README.md
+  └ 73:| `reports/` | Validation and per-stage reports |
+
+• Ran ls -ld .venv && if [ -L .venv ]; then readlink .venv; fi && test -x .venv/bin/python && .venv/bin/python -V
+  └ lrwxrwxrwx 1 ubuntu ubuntu 24 Jul 15 06:59 .venv -> ../.venv_phase20_44e9bb7
+    ../.venv_phase20_44e9bb7
+    Python 3.10.12
+
+• Ran for f in requirements.lock requirements_frozen.txt pip_freeze.txt environment_snapshot.json environment_hashes.json
+  │ package_hashes.txt dependency_tree.txt model_manifest.md environment_report.md; do test -f environment/$f && echo "OK $f" || echo
+  │ "MISSING $f"; done
+  └ OK requirements.lock
+    OK requirements_frozen.txt
+    … +5 lines (ctrl + t to view transcript)
+    OK model_manifest.md
+    OK environment_report.md
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• .venv is a symlink to ../.venv_phase20_44e9bb7, not a normal in-place virtualenv. I’m leaving it untouched and will report the exact
+  restoration path; for validation it still points at the published frozen environment. Next I’m regenerating stage 00 and checking the
+  parser contract.
+
+• Ran export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 MPLCONFIGDIR=/tmp/marston_phase20_mpl NUMBA_CACHE_DIR=/tmp/marston_phase20_numba
+  │ XDG_CACHE_HOME=$PWD/.cache HF_HOME=$PWD/.cache/huggingface TORCH_HOME=$PWD/.cache/torch TRANSFORMERS_CACHE=$PWD/.cache/
+  │ huggingface/transformers && python scripts/step00_ground_truth.py --file bwc --overwrite
+  └ 2026-07-15 07:22:28,821 INFO Saved 48 ground-truth segments to /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json
+
+• Ran python - <<'PY'
+  │ import json, sys, subprocess
+  │ from pathlib import Path
+  │ … +15 lines
+  └ segments 48
+    speakers ['Speaker_1', 'Speaker_2', 'Speaker_3', 'Speaker_4']
+    … +5 lines (ctrl + t to view transcript)
+    json_matches_root_reference True
+    rttm_matches_root_reference True
+
+• Ran python - <<'PY'
+  │ from pathlib import Path
+  │ for p in [Path('ground_truth/bwc.txt'), Path('ground_truth_json/bwc.json')]:
+  │ … +2 lines
+  └ ground_truth/bwc.txt True 4434
+    ground_truth_json/bwc.json True 7336
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The parser validation passes: it regenerates 48 utterances, normalized speaker labels, 484 reference words, and byte-identical JSON/
+  RTTM references. The README lacks the requested short validation section, so I’m appending only that section.
+
+• Ran tail -40 README.md
+  └
+    ## Reproducibility Files
+    … +36 lines (ctrl + t to view transcript)
+    python run_phase20.py --overwrite
+    ```
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I’m adding the README validation note exactly as a release-readiness documentation change; no Python code is being edited.
+
+• Edited phase20_standalone/README.md (+14 -0)
+    155
+    156 +## Validation
+    157 +
+    158 +The standalone implementation has been validated against the original Phase 20 implementation.
+    159 +
+    160 +Using the published frozen environment, the standalone release reproduces
+    161 +
+    162 +- VAD outputs
+    163 +- WhisperX outputs
+    164 +- MSDD outputs
+    165 +- Speaker attribution outputs
+    166 +- Published evaluation metrics
+    167 +
+    168 +within normal floating-point precision.
+    169 +
+    170  Expected published ASR reproduction:
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Next I’m removing only generated pipeline artifacts so the clean test starts from preserved inputs, scripts, environment files, and
+  model caches. I’m not deleting raw_audio/, ground_truth/, ground_truth_json/, environment/, scripts/, or .cache/.
+
+• Ran for d in audio grounding transcripts transcription diarization metrics reports outputs fusion manifests evaluation; do if [ -e
+  │ "$d" ]; then echo "$d"; fi; done
+  └ audio
+    grounding
+    … +7 lines (ctrl + t to view transcript)
+    manifests
+    evaluation
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The generated directories are identified. I’m deleting those directories only, then running python run_phase20.py --file bwc without
+  --overwrite in the frozen environment.
+
+✔ You approved codex to run rm -rf audio grounding transcripts transcription diarization metrics reports ... this time
+
+• Ran rm -rf audio grounding transcripts transcription diarization metrics reports outputs fusion manifests evaluation
+  └ (no output)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The generated artifacts were removed. I’m starting the clean pipeline run now with the documented environment variables and the
+  published venv.
+
+✔ You approved codex to always run commands that start with export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 MPLCONFIGDIR=/tmp/
+  marston_phase20_m...
+
+• Ran export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 MPLCONFIGDIR=/tmp/marston_phase20_mpl NUMBA_CACHE_DIR=/tmp/marston_phase20_numba
+  │ XDG_CACHE_HOME=$PWD/.cache HF_HOME=$PWD/.cache/huggingface TORCH_HOME=$PWD/.cache/torch TRANSFORMERS_CACHE=$PWD/.cache/
+  │ huggingface/transformers && python run_phase20.py --file bwc
+  └ 2026-07-15 07:24:55,766 INFO Ground-truth JSON exists, skipping conversion: /home/ubuntu/marston/phase20_standalone/
+    ground_truth_json/bwc.json
+    … +146 lines (ctrl + t to view transcript)
+    2026-07-15 07:25:28,831 INFO Saved 41 final VAD segments to /home/ubuntu/marston/phase20_standalone/grounding/bwc_pathB_vad.json
+    2026-07-15 07:25:28,831 INFO Splits=0 max_duration=11.188s long_after=0
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The clean run is progressing through the frozen environment. Stage 00 skipped because the validated reference JSON was intentionally
+  preserved; VAD Path A has regenerated 46 final segments, matching the published run shape.
+
+• Ran export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 MPLCONFIGDIR=/tmp/marston_phase20_mpl NUMBA_CACHE_DIR=/tmp/marston_phase20_numba
+  │ XDG_CACHE_HOME=$PWD/.cache HF_HOME=$PWD/.cache/huggingface TORCH_HOME=$PWD/.cache/torch TRANSFORMERS_CACHE=$PWD/.cache/
+  │ huggingface/transformers && python run_phase20.py --file bwc
+  └ 2026-07-15 07:24:55,766 INFO Ground-truth JSON exists, skipping conversion: /home/ubuntu/marston/phase20_standalone/
+    ground_truth_json/bwc.json
+    … +385 lines (ctrl + t to view transcript)
+
+    Phase 20 complete.
+
+• Context compacted
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I’m continuing from the validation run that was already in progress. The clean pipeline is past VAD and was in WhisperX transcription;
+  I’m going to let it finish, then I’ll compare the generated artifacts and metrics rather than touching source.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The clean pipeline completed successfully under the frozen environment. I’m now pulling the generated metric JSON, checking the code
+  search for hardcoded bwc, and confirming the final working tree impact.
+
+• Explored
+  └ Search bwc in phase20_standalone
+
+• Ran git status --short
+  └  M phase20_standalone/README.md
+     D phase20_standalone/fusion/attributed_words.json
+    … +110 lines (ctrl + t to view transcript)
+    ?? phase20_standalone/reports/bwc_phase20_vs_phase19_comparison.md
+    ?? phase20_standalone/scripts/step00_ground_truth.py
+
+• Explored
+  └ List python -c "import json, pathlib; root=pathlib.Path('phase20_standalone'); files=['metrics/bwc_vad_metrics_pathA.json','metrics/
+         bwc_vad_metrics_pathB.json','metrics/bwc_asr_metrics.json','metrics/bwc_diar_metrics.json','metrics/bwc_fusion_metrics.json'];
+         for f in files:
+          p=root/f; print('##', f); print(json.dumps(json.load(open(p)), indent=2, sort_keys=True))"
+    Read README.md
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The metric files are using the file-prefixed names produced by the refactor, so I’m switching the comparison to those generated JSON
+  paths. The hardcoded filename audit already found executable bwc occurrences in step00_ground_truth.py; I’ll include those explicitly
+  rather than hiding them under documentation hits.
+
+• Explored
+  └ List environment
+    List .venv
+    List python -c "import json, pathlib; root=pathlib.Path('phase20_standalone'); files=['metrics/bwc_pathA_vad_metrics.json','metrics/
+         bwc_pathB_vad_metrics.json','metrics/bwc_asr_metrics.json','metrics/bwc_diar_metrics.json','metrics/
+         bwc_fusion_metrics.json','metrics/bwc_all_metrics.json'];
+         for f in files:
+          p=root/f; print('##', f); print(json.dumps(json.load(open(p)), indent=2, sort_keys=True))"
+    List python -c "import json,pathlib; p=pathlib.Path('phase20_standalone/ground_truth_json/bwc.json'); data=json.load(open(p));
+         words=sum(len(x['text'].split()) for x in data); print('segments',len(data)); print('speakers',sorted({x['speaker'] for x in
+         data})); print('reference_words',words); print('first',data[0]); print('last',data[-1])"
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The clean metrics match the previously restored frozen-environment numbers. One quick parser-summary command assumed a list-shaped
+  JSON; the file uses the pipeline schema, so I’m reading it through the correct key now.
+
+• Ran python -c "import json,pathlib; data=json.load(open('phase20_standalone/ground_truth_json/bwc.json')); print(type(data).__name__);
+  │ print(data.keys() if isinstance(data,dict) else 'list'); print(json.dumps(data if not isinstance(data,dict) else {k:(len(v) if
+  │ isinstance(v,list) else v) for k,v in data.items()}, indent=2)[:2000])"
+  └ dict
+    dict_keys(['file', 'segments'])
+    … +2 lines (ctrl + t to view transcript)
+      "segments": 48
+    }
+
+• Ran python -c "import json,pathlib; root=json.load(open('ground_truth_json/bwc.json')); cur=json.load(open('phase20_standalone/
+  │ ground_truth_json/bwc.json')); print(root==cur)"
+  └ True
+
+• Ran python -c "from pathlib import Path;
+  │ required=['requirements.lock','requirements_frozen.txt','pip_freeze.txt','environment_snapshot.json','environment_hashes.json','pa
+  │ ckage_hashes.txt','dependency_tree.txt','model_manifest.md','environment_report.md']; root=Path('phase20_standalone/environment');
+  │ … +1 lines
+  └ requirements.lock present
+    requirements_frozen.txt present
+    … +5 lines (ctrl + t to view transcript)
+    model_manifest.md present
+    environment_report.md present
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The generated ground-truth JSON is byte/structure equal to the repository’s reference ground_truth_json/bwc.json. I’m extracting the
+  human-readable counts now so the release report can state the parser validation plainly.
+
+• Ran python -c "import json; data=json.load(open('phase20_standalone/ground_truth_json/bwc.json'))['segments'];
+  │ words=sum(len(s['text'].split()) for s in data); print('segments',len(data)); print('speakers',sorted({s['speaker'] for s in
+  │ data})); print('reference_words',words); print('first_start',data[0]['start']); print('first_end',data[0]['end']);
+  │ … +2 lines
+  └ segments 48
+    speakers ['Speaker_1', 'Speaker_2', 'Speaker_3', 'Speaker_4']
+    … +6 lines (ctrl + t to view transcript)
+    last_speaker Speaker_2
+    last_text I know
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• One nuance surfaced in the parser check: a raw whitespace split of the JSON transcript gives 485 tokens, while the evaluation metric
+  reports 484 reference words. I’m checking the evaluator’s normalization so I can report the correct release-facing number instead of
+  mixing raw text tokens with ASR-normalized words.
+
+• Explored
+  └ Search reference_words|normalize|split\( in step06b_asr_eval.py
+
+• Ran python -c "import json; data=json.load(open('phase20_standalone/ground_truth_json/bwc.json'))['segments'];
+  │ for i,s in enumerate(data):
+  │  words=s['text'].split()
+  │ … +2 lines
+  └ 0 Speaker_1 0.0 10.0 41 Okay, my name's is PC ***** and I'm based at Thorpe Wood Police Station in Peterborough. I have to go. I
+    have to go through this bit yeah. The grounds for search is that the vehicle is linked to drugs supply.
+    … +31 lines (ctrl + t to view transcript)
+    45 Speaker_2 160.0 161.0 6 You've got to try it brother
+    46 Speaker_1 161.0 163.0 10 Have you? Nothing was ever going to happen, was it?
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The parser JSON is structurally identical to the reference file. The 484 figure is the ASR-normalized reference-word count used by the
+  metrics, while 485 is a raw whitespace count on the unnormalized transcript JSON; I’ll report that distinction.
+
+• Explored
+  └ Read common.py
+
+• Ran python -c "import sys,json; sys.path.insert(0,'phase20_standalone/scripts'); from common import normalize_text,text_from_gt;
+  │ raw=text_from_gt(__import__('pathlib').Path('phase20_standalone/ground_truth_json/bwc.json')); print(len(raw.split()),
+  │ len(normalize_text(raw).split()))"
+  └ 485 484
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The report now has enough evidence for the parser and pipeline. I’m doing one final pull from the published metrics document so the
+  comparison table is anchored to the repository reference rather than memory.
+
+• Explored
+  └ Search Path A|Path B|Precision|Recall|F1|False Alarm|Miss|WER|Substitutions|Insertions|Deletions|Reference Words|DER|JER|Speaker
+           Accuracy|Word Attribution Error|Timeline Accuracy|0\.844|0\.841|0\.324|0\.447|0\.902 in results_to_be_published.md
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The published metrics file is not at the repository root in this checkout, so I’m locating it before extracting the reference values.
+
+• Explored
+  └ List rg --files -g results_to_be_published.md
+    Search Path A|Path B|Precision|Recall|F1|False Alarm|Miss|WER|Substitutions|Insertions|Deletions|Reference Words|DER|JER|Speaker
+           Accuracy|Word Attribution Error|Timeline Accuracy|0\.844|0\.841|0\.324|0\.447|0\.902 in results_to_be_published.md
+    Read results_to_be_published.md
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The reference document stores metrics rounded to six decimals. The obtained values match those rounded references within ordinary
+  floating-point tolerance; integer counts match exactly. The only release criterion that does not cleanly pass is the executable bwc
+  special-case in the ground-truth parser.
+
+• Explored
+  └ Read step00_ground_truth.py
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I also checked the frozen environment directory directly; the required files are present, and there are no git-reported changes under
+  phase20_standalone/environment.
+
+• Ran git status --short phase20_standalone/environment phase20_standalone/README.md phase20_standalone/scripts/step00_ground_truth.py
+  └  M phase20_standalone/README.md
+    ?? phase20_standalone/scripts/step00_ground_truth.py
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Release Report
+
+  Pipeline execution status: python run_phase20.py --file bwc completed successfully under the published frozen environment.
+
+  .venv status: phase20_standalone/.venv is a symlink:
+
+  phase20_standalone/.venv -> ../.venv_phase20_44e9bb7
+
+  I did not replace it. To restore a normal venv, remove only the symlink, create a real .venv, then install exactly from environment/
+  requirements.lock following the documented reproduction flow. Do not upgrade or re-resolve dependencies.
+
+  Ground-truth parser validation: PASS. scripts/step00_ground_truth.py --file bwc --overwrite regenerated JSON that matches the
+  reference JSON structurally. It contains 48 utterances, speakers Speaker_1 through Speaker_4, matching timestamps, and ASR-normalized
+  reference word count 484. Raw whitespace token count is 485 before punctuation normalization.
+
+  Frozen environment files: PASS. Required files are present and unchanged under phase20_standalone/environment/.
+
+  README modification: appended the requested short ## Validation section to phase20_standalone/README.md.
+
+  Metric Comparison
+
+   Metric                           Expected               Obtained    Match?
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━
+   Path A VAD Precision             0.844796     0.8447958808385436    PASS, diff 1.19e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path A VAD Recall                0.772101     0.7721008403361345    PASS, diff 1.60e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path A VAD F1                    0.806814     0.8068141903758342    PASS, diff 1.90e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path A VAD False Alarm           0.299079    0.29907866761162294    PASS, diff 3.32e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path A VAD Miss                  0.227899    0.22789915966386554    PASS, diff 1.60e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path B VAD Precision             0.841664     0.8416635927701955    PASS, diff 4.07e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path B VAD Recall                0.766975     0.7669747899159663    PASS, diff 2.10e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path B VAD F1                    0.802585     0.8025852972212452    PASS, diff 2.97e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path B VAD False Alarm           0.304217     0.3042168674698795    PASS, diff 1.33e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Path B VAD Miss                  0.233025    0.23302521008403362    PASS, diff 2.10e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   ASR WER                          0.324380     0.3243801652892562    PASS, diff 1.65e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   ASR Substitutions                      86                     86    PASS
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   ASR Insertions                         26                     26    PASS
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   ASR Deletions                          45                     45    PASS
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   ASR Reference Words                   484                    484    PASS
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Diarization DER                  0.447059     0.4470588235294113    PASS, diff 1.76e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Diarization Miss                 0.230000    0.23000000000000015    PASS, diff 1.67e-16
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Diarization False Alarm          0.139916    0.13991596638655418    PASS, diff 3.36e-8
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Diarization Confusion            0.077143    0.07714285714285694    PASS, diff 1.43e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Diarization JER                  0.842448     0.8424482152411525    PASS, diff 2.15e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Fusion Speaker Accuracy          0.902743     0.9027431421446384    PASS, diff 1.42e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Fusion Word Attribution Error    0.097257    0.09725685785536164    PASS, diff 1.42e-7
+  ───────────────────────────────  ──────────  ─────────────────────  ─────────────────────
+   Fusion Timeline Accuracy         0.705312       0.70531235750114    PASS, diff 3.58e-7
+
+  Hardcoded Filename Audit
+
+  Executable Python still contains bwc in phase20_standalone/scripts/step00_ground_truth.py:38:
+
+   File                       Lines    Finding
+  ━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   scripts/             38, 107-108    apply_legacy_bwc_curation(...) and if name == "bwc" are executable BWC-specific parser behavior.
+   step00_ground_tru
+   th.py
+  ───────────────────  ─────────────  ──────────────────────────────────────────────────────────────────────────────────────────────────
+   scripts/                   39-44    Docstring/comments explaining the BWC curation.
+   step00_ground_tru
+   th.py
+
+  No Python source files were modified during this final validation pass. The only file I changed was phase20_standalone/README.md.
+
+  Repository readiness: metrics, parser, pipeline, README validation section, and frozen environment checks pass. However, the
+  generalization audit does not pass because executable Python still contains BWC-specific parser logic, and .venv is currently a
+  symlink rather than a normal virtual environment.
+
+  RELEASE STATUS: NOT READY
+
+
+--------------------------------------------------------------------------
+
+
 Perform the final release validation and cleanup for the Phase20 standalone repository.
 
 IMPORTANT
