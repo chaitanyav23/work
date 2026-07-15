@@ -1,3 +1,232 @@
+The Phase20 standalone implementation has now been validated.
+
+DO NOT modify any Python source code unless I explicitly ask.
+
+The parser is already fixed.
+The VAD implementation has been verified to be semantically identical to the original implementation.
+
+The remaining numerical differences are now believed to originate from environment drift.
+
+===========================================================
+OBJECTIVE
+===========================================================
+
+Determine whether the current runtime environment is IDENTICAL to the published Phase20 environment.
+
+Do NOT debug the pipeline.
+
+Do NOT modify any scripts.
+
+Treat the implementation as frozen.
+
+===========================================================
+REFERENCE
+===========================================================
+
+Everything required to reproduce the published environment already exists under
+
+phase20_standalone/environment/
+
+including
+
+requirements.lock
+requirements_frozen.txt
+pip_freeze.txt
+environment_snapshot.json
+environment_hashes.json
+package_hashes.txt
+dependency_tree.txt
+model_manifest.md
+environment_report.md
+
+These files describe the exact environment that produced the published results.
+
+===========================================================
+TASK 1
+===========================================================
+
+Compare the CURRENT environment against the published environment.
+
+For every installed package report
+
+Expected Version
+Installed Version
+Match / Mismatch
+
+Include at minimum
+
+Python
+Torch
+TorchAudio
+TorchVision
+Pyannote.audio
+Pyannote.core
+WhisperX
+Whisper
+faster-whisper
+ctranslate2
+DeepFilterNet
+DeepFilterLib
+NeMo Toolkit
+NumPy
+SciPy
+Transformers
+HuggingFace Hub
+
+and any other package directly involved in the pipeline.
+
+===========================================================
+TASK 2
+===========================================================
+
+Verify model revisions.
+
+Compare
+
+- HuggingFace snapshot IDs
+- cached model revisions
+- model hashes
+
+against
+
+environment/model_manifest.md
+
+Determine whether
+
+Pyannote VAD
+WhisperX
+Whisper Large-v3
+MSDD
+TitaNet
+DeepFilterNet
+
+are using the exact published revisions.
+
+===========================================================
+TASK 3
+===========================================================
+
+Compare
+
+requirements.lock
+
+against the current installed packages.
+
+Identify
+
+- missing packages
+- upgraded packages
+- downgraded packages
+- dependency substitutions
+- transitive dependency differences
+
+Pay particular attention to packages installed because pip resolved newer dependencies.
+
+===========================================================
+TASK 4
+===========================================================
+
+If mismatches exist,
+
+determine whether they can explain the observed divergence.
+
+Remember that after previous debugging
+
+ground_truth_json matches exactly
+ground_truth_rttm matches exactly
+
+The first remaining divergence is
+
+grounding/pathA_vad.json
+
+Therefore evaluate whether the package/model differences are sufficient to explain
+
+different raw Pyannote VAD output.
+
+===========================================================
+TASK 5
+===========================================================
+
+If the environment does NOT match,
+
+repair ONLY the environment.
+
+Do NOT modify source code.
+
+Use the repository's documented reproduction procedure.
+
+If necessary
+
+- recreate the virtual environment
+- install strictly from environment/requirements.lock
+- use --no-deps where required
+- preserve historical dependency conflicts if documented
+- verify package versions afterwards
+
+Do NOT upgrade packages.
+
+Do NOT install newer versions.
+
+The goal is exact reproduction of the published environment.
+
+===========================================================
+TASK 6
+===========================================================
+
+After the environment has been repaired,
+
+rerun
+
+python run_phase20.py --file bwc --overwrite
+
+Then compare
+
+1.
+ground_truth_json
+
+2.
+grounding/pathA_vad.json
+
+3.
+grounding/pathB_vad.json
+
+4.
+aligned WhisperX output
+
+5.
+diarization RTTM
+
+6.
+fusion output
+
+7.
+all final metrics
+
+against the original Phase20 experiment.
+
+===========================================================
+DELIVERABLE
+===========================================================
+
+Provide
+
+1. Environment comparison table.
+
+2. Every package mismatch.
+
+3. Every model revision mismatch.
+
+4. Every change made to the environment.
+
+5. Confirmation that no Python source files were modified.
+
+6. Final stage-by-stage comparison.
+
+7. Whether numerical equivalence with the published Phase20 implementation has been restored.
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 • I’ll do a semantic comparison of just the two VAD scripts and their immediate path/config effects. I’ll avoid code changes and focus
   on whether runtime behavior differs, not formatting or standalone argument wrapping.
 
