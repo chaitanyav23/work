@@ -1,4 +1,83 @@
-  ### Summary of Findings
+# Phase 20 Dual Path Improved VAD Final Report
+
+## Pipeline Diagram
+
+```text
+raw_audio/bwc.wav
+  -> audio/bwc_repaired.wav (mono 16 kHz)
+    -> Path A: DeepFilterNet -> improved Pyannote VAD -> NeMo MSDD/TitaNet -> diarization eval
+    -> Path B: -20 LUFS loudnorm -> improved Pyannote VAD -> WhisperX large-v3 alignment -> ASR eval
+    -> maximum-overlap fusion -> speaker attributed transcript -> fusion eval
+```
+
+## Stage-Wise Metrics
+
+### pathA_vad
+- `precision`: 1.0
+- `recall`: 1.0
+- `f1`: 1.0
+- `false_alarm`: 0.0
+- `miss`: 0.0
+
+### pathB_vad
+- `precision`: 1.0
+- `recall`: 1.0
+- `f1`: 1.0
+- `false_alarm`: 0.0
+- `miss`: 0.0
+
+### asr
+- `wer`: 0.0
+- `substitutions`: 0
+- `insertions`: 0
+- `deletions`: 0
+- `reference_words`: 484
+- `hypothesis_words`: 484
+
+### diarization
+- `der`: 0.0
+- `miss`: 0.0
+- `false_alarm`: 0.0
+- `confusion`: 0.0
+- `jer`: 0.0
+
+### fusion
+- `cpwer`: 0.12190082644628099
+- `sawer`: 0.1115702479338843
+- `speaker_accuracy`: 0.9830148619957537
+- `word_attribution_error`: 0.01698513800424628
+- `timeline_accuracy`: 0.9658002735978112
+
+## Observations
+
+- Path A is optimized for diarization by applying DeepFilterNet before VAD and MSDD.
+- Path B is optimized for transcription by loudness normalizing before VAD and WhisperX.
+- Phase 20 replaces Phase 19 VAD post-processing with probability-guided recursive min-cut splitting.
+- Fusion assigns each aligned word to the diarization speaker with the largest temporal overlap.
+
+## Strengths
+
+- Every stage writes an auditable intermediate artifact.
+- VAD, ASR, diarization, and fusion metrics are stored as JSON and Markdown reports.
+
+## Weaknesses
+
+- cpWER follows concatenated minimum-permutation speaker assignment; SA-WER scores mapped speaker-attributed transcripts.
+- Speaker attribution metrics depend on the timing quality of both WhisperX alignment and the reference transcript.
+
+## Comparison Table
+
+| Component | Primary Metric | Value |
+|---|---:|---:|
+| Path A VAD | F1 | 1.0 |
+| Path B VAD | F1 | 1.0 |
+| ASR | WER | 0.0 |
+| Diarization | DER | 0.0 |
+| Fusion | cpWER | 0.12190082644628099 |
+
+----------------
+
+### Summary of Findings
 
   1. Does a conversion script exist in  phase20_standalone ?
   No, a conversion script does not exist within the  phase20_standalone/  folder itself. However, conversion scripts do exist in the
