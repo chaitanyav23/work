@@ -1,3 +1,11 @@
+Walk through all 20 phases in sequence.
+Explain the objective and key changes introduced in each phase.
+Cover the code, models, configurations, inputs, and outputs used.
+Explain major challenges, experiment results, and technical decisions.
+Highlight why certain approaches were retained, modified, or discontinued.
+
+----------------
+
 • I’ll make the smallest possible parser change: remove the filename branch and express the existing BWC-compatible behavior as generic
   transcript curation rules based on segment content. Then I’ll run the requested validation without changing model or evaluation code.
 
