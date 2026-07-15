@@ -1,3 +1,158 @@
+• I’ll do a semantic comparison of just the two VAD scripts and their immediate path/config effects. I’ll avoid code changes and focus
+  on whether runtime behavior differs, not formatting or standalone argument wrapping.
+
+• Explored
+  └ Read step03_vad.py
+    Search step03_vad|pathA_vad|pathB_vad|oracle|loudnorm|deepfilternet|normalized|dfn in run_phase20.py
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The core VAD functions are semantically the same in the normal Pyannote path. I’m checking the Oracle writer and the cached model/
+  config evidence now so the conclusion covers the full checklist, including thresholds that are loaded from the Pyannote pipeline
+  config rather than hard-coded in either script.
+
+• Explored
+  └ Read phase19_common.py, common.py
+    Search *manifest* in environment
+    Search pyannote|voice-activity|segmentation|onset|offset|hysteresis|model in environment
+
+• Ran python - <<'PY'
+  │ from pathlib import Path
+  │ for p in [Path('experiments/phase20_dual_path_improved_vad/audio/bwc_dfn.wav'), Path('phase20_standalone/audio/bwc_dfn.wav'),
+  │ … +3 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-s0yzu_t_ because there was an issue with the default path (/home/
+    … +13 lines (ctrl + t to view transcript)
+    experiments/phase20_dual_path_improved_vad/audio/bwc_normalized.wav True 5613734
+    phase20_standalone/audio/bwc_normalized.wav True 5613734
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I’ve finished the semantic audit. No VAD code was modified. The normal execution path uses the same VAD algorithm and parameters; the
+  only behavioral differences in step03_vad.py are standalone wrapper/fallback behavior and metadata/output naming, not the Pyannote VAD
+  path that actually ran.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Semantic VAD audit complete. I did not modify code.
+
+  Verdict
+  The normal Pyannote VAD implementation is semantically identical between:
+
+  - experiments/phase20_dual_path_improved_vad/scripts/step03_vad.py
+  - phase20_standalone/scripts/step03_vad.py
+
+  The first remaining divergence is caused by model/library/runtime version differences, not by a VAD implementation difference in the
+  normal execution path.
+
+  Checked Items
+
+   Item                                  Result
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   model checkpoint                      Same model id: pyannote/voice-activity-detection; neither script pins a revision directly.
+                                         Both delegate resolution to HF/Pyannote config.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   pipeline instantiation                Identical: download_from_hf_hub(...), YAML load, segmentation checkpoint@revision rewrite,
+                                         Pipeline.from_pretrained(config, token=token).
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   onset threshold                       Not hard-coded in either script; loaded from Pyannote pipeline config.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   offset threshold                      Same as above.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   hysteresis                            Same as above.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   merge gap                             Identical default: 0.15.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   minimum speech duration               Identical default: 0.10.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   minimum silence duration              Not explicitly set in either script; Pyannote pipeline default/config behavior.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   recursive splitting logic             Identical.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   probability-guided split algorithm    Identical in normal NumPy path.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   local minimum search window           Identical default: 0.50.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   padding                               No explicit padding in either script.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   sample rate                           Not changed by VAD script; both consume upstream WAVs.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   audio loading                         Identical for RMS fallback: soundfile.read(..., always_2d=False). Pyannote loading is
+                                         delegated to pipeline._segmentation(file).
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   resampling                            Not performed in step03_vad.py; delegated to Pyannote/audio backend if needed.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   normalization before VAD              Same path semantics: Path A uses audio/bwc_dfn.wav; Path B uses audio/bwc_normalized.wav.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   Oracle generation                     Not in step03_vad.py; write_oracle_rttm implementation is semantically identical in shared/
+                                         common code.
+  ────────────────────────────────────  ────────────────────────────────────────────────────────────────────────────────────────────────
+   JSON serialization                    Payload semantics identical. Standalone only changes filenames/paths and metadata output name.
+
+  Behavioral Differences Found
+
+  - Standalone adds optional dependency guards and a reference-VAD fallback if dependencies or Pyannote fail. This did not run in the
+    validation logs; the normal Pyannote CUDA path ran.
+
+  - Standalone derives input/output paths from --file; original receives explicit --input/--output. For bwc, these resolve to equivalent
+    files:
+      - Path A: audio/bwc_dfn.wav
+      - Path B: audio/bwc_normalized.wav
+
+  - Standalone changes output names, e.g. bwc_pathA_vad.json vs pathA_vad.json; this is filename refactoring, not VAD behavior.
+  - segment_stats uses sum / len instead of np.mean; this can only affect reported metadata rounding at most, not segmentation.
+
+  Evidence For Environment/Library Cause
+
+  The divergence happens at raw Pyannote output:
+
+   Artifact                Original    Standalone
+  ━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━  ━━━━━━━━━━━━
+   Path A raw VAD count          47            45
+  ──────────────────────  ──────────  ────────────
+   Path A final count            46            44
+  ──────────────────────  ──────────  ────────────
+   Path B raw VAD count          42            31
+  ──────────────────────  ──────────  ────────────
+   Path B final count            41            30
+
+  That occurs before recursive splitting, ASR, diarization, fusion, or evaluation.
+
+  Current runtime differs from the published frozen environment, notably current pyannote.audio 3.4.0 vs published 4.0.4. The logs also
+  show Pyannote/Torch checkpoint compatibility warnings. Therefore the remaining numerical divergence is best explained by model/library
+  version behavior, not implementation differences in step03_vad.py.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+## Reproducibility Files
+
+| File | Contents |
+|---|---|
+| `environment/requirements.lock` | Exact install lock used by `install.sh` |
+| `environment/requirements_frozen.txt` | Full `pip freeze --all` from the reproduced environment |
+| `environment/pip_freeze.txt` | Full package freeze |
+| `environment/environment_snapshot.json` | Machine-readable runtime snapshot |
+| `environment/environment_hashes.json` | Hashes for environment files and model artifacts |
+| `environment/package_hashes.txt` | Installed distribution RECORD hashes |
+| `environment/dependency_tree.txt` | `python -m pip inspect` dependency metadata |
+| `environment/model_manifest.md` | Model revisions, cache locations, hashes |
+| `environment/environment_report.md` | Human-readable environment report |
+
+## Troubleshooting
+
+- `HF_TOKEN is required`: set `HF_TOKEN` and accept the Pyannote model terms on HuggingFace.
+- `CUDA unavailable`: verify `nvidia-smi`, driver 580.159.04 or compatible, and Torch `2.8.0+cu128`.
+- `pip check` reports two conflicts: expected for the historical published environment; do not resolve them.
+- WhisperX produces 369 words or WER near 0.719: the environment drifted. Recreate from `environment/requirements.lock` with `--no-deps`.
+- DeepFilterNet command missing: activate `.venv_phase20` and confirm `DeepFilterNet==0.5.6` and `DeepFilterLib==0.5.6`.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 The parser is now verified.
 
 Do NOT modify any code yet.
