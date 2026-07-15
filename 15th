@@ -1,4 +1,51 @@
- I’ll pin the comparison to the root reference ground_truth_json/bwc.json and the standalone regenerated phase20_standalone/
+The parser is now verified.
+
+Do NOT modify any code yet.
+
+Compare ONLY the VAD implementation between
+
+experiments/phase20_dual_path_improved_vad/scripts/step03_vad.py
+
+and
+
+phase20_standalone/scripts/step03_vad.py
+
+I do NOT want a generic diff.
+
+I want a semantic audit.
+
+Verify that ALL of the following are identical:
+
+- model checkpoint
+- pipeline instantiation
+- onset threshold
+- offset threshold
+- hysteresis
+- merge gap
+- minimum speech duration
+- minimum silence duration
+- recursive splitting logic
+- probability-guided split algorithm
+- local minimum search window
+- padding
+- sample rate
+- audio loading
+- resampling
+- normalization before VAD
+- Oracle generation
+- JSON serialization
+
+If anything differs, list every behavioral difference.
+
+If everything is identical, explicitly conclude that the first remaining divergence is caused by model/library version differences rather than implementation differences.
+
+Do not modify any code unless you find an actual behavioral difference.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+I’ll pin the comparison to the root reference ground_truth_json/bwc.json and the standalone regenerated phase20_standalone/
   ground_truth_json/bwc.json. I’ll first diff their structure and transcript parsing behavior, then edit only phase20_standalone/
   scripts/step00_ground_truth.py if the mismatch is deterministic parser behavior.
 
