@@ -1,3 +1,391 @@
+ I’ll pin the comparison to the root reference ground_truth_json/bwc.json and the standalone regenerated phase20_standalone/
+  ground_truth_json/bwc.json. I’ll first diff their structure and transcript parsing behavior, then edit only phase20_standalone/
+  scripts/step00_ground_truth.py if the mismatch is deterministic parser behavior.
+
+• Explored
+  └ Read step00_ground_truth.py, bwc.txt
+    Search parse_transcript|ground_truth_json|Speaker_ in scripts
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The old JSON has 48 segments and uses normalized speaker labels like Speaker_1; the standalone parser emits 54 segments directly from
+  timestamp lines and keeps speaker labels with spaces. I’m now deriving the exact merge/normalization rules from the old JSON, then
+  I’ll patch only step00_ground_truth.py.
+
+• Ran python - <<'PY'
+  │ import json
+  │ from pathlib import Path
+  │ … +11 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-ljyhl605 because there was an issue with the default path (/home/
+    … +21 lines (ctrl + t to view transcript)
+    drugs supply."}
+    last {'speaker': 'Speaker 2', 'start': 163.0, 'end': 164.0, 'text': 'I know'}
+
+• Ran git diff -- ground_truth_json/bwc.json phase20_standalone/ground_truth_json/bwc.json | sed -n '1,260p'
+  └ diff --git a/phase20_standalone/ground_truth_json/bwc.json b/phase20_standalone/ground_truth_json/bwc.json
+    index 7b8477a..36c20af 100644
+    … +256 lines (ctrl + t to view transcript)
+    +      "speaker": "Speaker 2",
+    +      "start": 110.0,
+
+• Explored
+  └ Search bwc.json|parse_ground|ground_truth in phase20_dual_path_improved_vad
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The old JSON is not just a mechanical parse of every timestamped line. It normalizes speaker names and drops several short overlapping
+  utterances; I’m checking whether that exact behavior exists in an older parser or was manually curated in the original artifact.
+
+• Ran python - <<'PY'
+  │ import json
+  │ ref=json.load(open('/home/ubuntu/marston/ground_truth_json/bwc.json'))['segments']
+  │ … +8 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-qw6efl6p because there was an issue with the default path (/home/
+    … +115 lines (ctrl + t to view transcript)
+    52 Speaker 1 161.0-163.0 Have you? Nothing was ever going to happen, was it?
+    53 Speaker 2 163.0-164.0 I know
+
+• Ran git diff --no-index -- ground_truth_json/bwc.json phase20_standalone/ground_truth_json/bwc.json | sed -n '1,520p'
+  └ diff --git a/ground_truth_json/bwc.json b/phase20_standalone/ground_truth_json/bwc.json
+    index 7b8477a..36c20af 100644
+    … +375 lines (ctrl + t to view transcript)
+           "end": 164.0,
+           "text": "I know"
+
+• Explored
+  └ Read parse_ground_truth.py, evaluate_vad.py
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I found six legacy curation differences in addition to speaker-name normalization: the old artifact excludes timestamped utterances at
+  19-20, 84-85, 105-106, 110-110, 127-127, and 137-138 seconds; it also carries two speaker-label corrections and one text correction
+  near the end. I’m going to encode those as a narrow legacy compatibility pass for bwc inside step00_ground_truth.py, leaving the rest
+  of the pipeline untouched.
+
+• Edited phase20_standalone/scripts/step00_ground_truth.py (+49 -2)
+     20
+     21 +def normalize_speaker(speaker: str) -> str:
+     22 +    """Return the legacy Phase20 speaker label used by reference artifacts."""
+     23 +
+     24 +    return speaker.strip().replace(" ", "_")
+     25 +
+     26 +
+     27  def flush_segment(segments: list[dict[str, object]], current: dict[str, object] | None) -> None:
+        ⋮
+     33      current["text"] = " ".join(str(part).strip() for part in text_parts if str(part).strip())
+     34 +    current["speaker"] = normalize_speaker(str(current["speaker"]))
+     35      segments.append(current)
+        ⋮
+     37
+     31 -def parse_transcript(text: str) -> list[dict[str, object]]:
+     38 +def apply_legacy_bwc_curation(segments: list[dict[str, object]]) -> list[dict[str, object]]:
+     39 +    """Match the original curated BWC reference JSON exactly.
+     40 +
+     41 +    The published Phase20 BWC reference was not a raw line-by-line parse of
+     42 +    ground_truth/bwc.txt. It removed several overlapping/interjection lines and
+     43 +    corrected a few labels/text fields. Keep this narrowly scoped so other
+     44 +    recordings continue to use the general parser.
+     45 +    """
+     46 +
+     47 +    dropped = {
+     48 +        (19.0, 20.0, "Speaker_2", "yeah yeah"),
+     49 +        (84.0, 85.0, "Speaker_2", "Yeah they are hard and square"),
+     50 +        (105.0, 106.0, "Speaker_1", "Oi"),
+     51 +        (110.0, 110.0, "Speaker_2", "i'm on the floor"),
+     52 +        (127.0, 127.0, "Speaker_3", "yeah"),
+     53 +        (137.0, 138.0, "Speaker_1", "Alright"),
+     54 +    }
+     55 +    curated: list[dict[str, object]] = []
+     56 +    for segment in segments:
+     57 +        key = (
+     58 +            float(segment["start"]),
+     59 +            float(segment["end"]),
+     60 +            str(segment["speaker"]),
+     61 +            str(segment["text"]),
+     62 +        )
+     63 +        if key in dropped:
+     64 +            continue
+     65 +        segment = dict(segment)
+     66 +        if segment["start"] == 134.0 and segment["end"] == 135.0 and segment["text"] == "Ah you scumbag":
+     67 +            segment["speaker"] = "Speaker_4"
+     68 +        elif segment["start"] == 149.0 and segment["end"] == 149.0 and segment["text"] == "You alright?":
+     69 +            segment["speaker"] = "Speaker_3"
+     70 +        elif segment["start"] == 150.0 and segment["end"] == 158.0:
+     71 +            segment["text"] = "Yeah. You did get me, I'll give you that mate. I honestly don't know what you were thinking then
+         "
+     72 +        curated.append(segment)
+     73 +    return curated
+     74 +
+     75 +
+     76 +def parse_transcript(text: str, name: str | None = None) -> list[dict[str, object]]:
+     77      """Parse supported ground-truth TXT formats into canonical segment dictionaries."""
+        ⋮
+    106              raise ValueError(f"Segment ends before it starts: {segment}")
+    107 +    if name == "bwc":
+    108 +        segments = apply_legacy_bwc_curation(segments)
+    109      return segments
+        ⋮
+    155
+    109 -    segments = parse_transcript(paths.ground_truth_txt.read_text())
+    156 +    segments = parse_transcript(paths.ground_truth_txt.read_text(), paths.name)
+    157      write_json(paths.ground_truth_json, {"file": paths.name, "segments": segments})
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The parser patch is scoped to the known legacy BWC reference behavior. I’m regenerating only stage 00 first and comparing the
+  generated JSON against the original reference before rerunning expensive model stages.
+
+• Ran python scripts/step00_ground_truth.py --file bwc --overwrite
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-kd2qax4h because there was an issue with the default path (/home/
+    … +16 lines (ctrl + t to view transcript)
+      torchaudio.list_audio_backends()
+    2026-07-15 06:34:02,946 INFO Saved 48 ground-truth segments to /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json
+
+• Ran cmp -s /home/ubuntu/marston/ground_truth_json/bwc.json /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json; printf
+  │ 'json_cmp=%s\n' $?
+  └ json_cmp=0
+
+• Ran diff -u /home/ubuntu/marston/ground_truth_json/bwc.json /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json | sed
+  │ -n '1,120p'
+  └ (no output)
+
+• Ran cmp -s /home/ubuntu/marston/ground_truth_rttm/bwc.rttm /home/ubuntu/marston/phase20_standalone/ground_truth_rttm/bwc.rttm; printf
+  │ 'rttm_cmp=%s\n' $?
+  └ rttm_cmp=1
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Stage 00 now reproduces the original BWC JSON byte-for-byte. I’m also checking the RTTM emitted from the same stage because
+  diarization evaluation depends on it; if it differs only by harmless RTTM column formatting I’ll note it, but if it changes speaker/
+  timing semantics I’ll fix it in the same parser file.
+
+• Ran python - <<'PY'
+  │ import json
+  │ for p in ['/home/ubuntu/marston/ground_truth_json/bwc.json','/home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json']:
+  │ … +2 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-_0uqkbjp because there was an issue with the default path (/home/
+    … +17 lines (ctrl + t to view transcript)
+    /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json 48 Yeah. You did get me, I'll give you that mate. I honestly
+    don't know what you were thinking then
+
+• Ran diff -u /home/ubuntu/marston/ground_truth_rttm/bwc.rttm /home/ubuntu/marston/phase20_standalone/ground_truth_rttm/bwc.rttm | sed
+  │ -n '1,160p'
+  └ --- /home/ubuntu/marston/ground_truth_rttm/bwc.rttm    2026-06-17 09:59:51.901133306 +0000
+    +++ /home/ubuntu/marston/phase20_standalone/ground_truth_rttm/bwc.rttm    2026-07-15 06:34:02.945443747 +0000
+    … +44 lines (ctrl + t to view transcript)
+     SPEAKER bwc 1 160.000 1.000 <NA> <NA> Speaker_2 <NA> <NA>
+     SPEAKER bwc 1 161.000 2.000 <NA> <NA> Speaker_1 <NA> <NA>
+
+• Explored
+  └ Read bwc.rttm
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The JSON is fixed, but the standalone RTTM writer was dropping zero-duration reference lines that exist in the original RTTM. Those
+  lines do not contribute duration, but for stage-by-stage equivalence I’m preserving them by changing the RTTM writer to skip only
+  negative durations.
+
+• Edited phase20_standalone/scripts/step00_ground_truth.py (+1 -1)
+    119              duration = float(segment["end"]) - start
+    120 -            if duration <= 0:
+    120 +            if duration < 0:
+    121                  continue
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• I’m regenerating stage 00 once more to verify both the JSON and RTTM now match the original artifacts exactly before running the full
+  pipeline.
+
+• Ran python scripts/step00_ground_truth.py --file bwc --overwrite
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-f9bffqfe because there was an issue with the default path (/home/
+    … +16 lines (ctrl + t to view transcript)
+      torchaudio.list_audio_backends()
+    2026-07-15 06:34:56,152 INFO Saved 48 ground-truth segments to /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json
+
+• Ran cmp -s /home/ubuntu/marston/ground_truth_json/bwc.json /home/ubuntu/marston/phase20_standalone/ground_truth_json/bwc.json; printf
+  │ 'json_cmp=%s\n' $?
+  └ json_cmp=0
+
+• Ran cmp -s /home/ubuntu/marston/ground_truth_rttm/bwc.rttm /home/ubuntu/marston/phase20_standalone/ground_truth_rttm/bwc.rttm; printf
+  │ 'rttm_cmp=%s\n' $?
+  └ rttm_cmp=0
+
+• Ran git diff -- phase20_standalone/scripts/step00_ground_truth.py
+  └ (no output)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Both stage-00 artifacts now compare byte-for-byte equal to the original root references. I’m rerunning the complete pipeline with
+  --overwrite next, using the same venv Python and unrestricted execution because the model stages need CUDA/multiprocessing resources.
+
+✔ You approved codex to run python run_phase20.py --file bwc --overwrite this time
+
+• Ran python run_phase20.py --file bwc --overwrite
+  └ 2026-07-15 06:35:38.717348088 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery
+    failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"
+    … +98 lines (ctrl + t to view transcript)
+    unchanged.
+      return ta_resample(audio, orig_sr, new_sr, **params)
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The full rerun is underway. Stage 00 reported 48 segments, confirming the fixed parser is active in the end-to-end command;
+  DeepFilterNet has started on the regenerated audio.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The first post-parser divergence is visible: Path A VAD generated 44 segments. The reference summary records Path B VAD at 41
+  segments; I’ll compare the generated VAD artifacts to the original Phase20 artifacts after the run completes, but this points at
+  model/environment-generated VAD rather than ground-truth parsing.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Path B VAD again produced 30 segments, so the first stage after fixed ground truth that diverges is VAD inference output. The logs
+  also show the current Pyannote/Torch compatibility warnings, which are evidence for environment/model-version effects rather than a
+  deterministic parser issue.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• WhisperX is transcribing the 30 Path B VAD segments. I’ll let it complete and then compare artifact counts and metrics against the
+  original Phase20 outputs/reference values.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Transcription is about 40% through. The rest of the work is mostly waiting on inference; no further code changes are being made.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• WhisperX is halfway through. Since VAD already diverged, ASR and fusion differences are expected to propagate from a different
+  segmentation input even with the corrected reference JSON.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The ASR run is past the long middle segments. After the pipeline exits, I’ll generate the final metric table from the JSON files and
+  explicitly classify the remaining divergence.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• WhisperX is in the last quarter. The generated Path B segment count remains the key stage boundary: original published artifacts
+  expect 41 Path B VAD/Whisper segments, this environment produces 30.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• With the corrected reference JSON, WhisperX now produced 407 aligned words, still below the published 465. The pipeline is moving
+  through MSDD and final evaluation now.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• MSDD completed and wrote the diarization RTTM. The run is now in ASR/diarization/fusion evaluation and aggregate reporting, so the
+  final metric files should be available shortly.
+
+• Ran python run_phase20.py --file bwc --overwrite
+  └ 2026-07-15 06:35:38.717348088 [W:onnxruntime:Default, device_discovery.cc:164 DiscoverDevicesForPlatform] GPU device discovery
+    failed: device_discovery.cc:89 ReadFileContents Failed to open file: "/sys/class/drm/card0/device/vendor"
+    … +547 lines (ctrl + t to view transcript)
+
+    Phase 20 complete.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The full rerun completed. I’m collecting the final metrics and comparing stage artifacts against the original Phase20 experiment
+  directory now, starting with ground truth and VAD before moving downstream.
+
+• Explored
+  └ Search *vad*.json in phase20_dual_path_improved_vad
+    List phase19_reference
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The original Phase20 artifacts are present under experiments/phase20_dual_path_improved_vad/, including the VAD JSONs, aligned words,
+  diarization RTTM, fusion output, and metrics. I’ll use those for the stage-by-stage divergence report rather than inferring only from
+  the published summary.
+
+• Ran python - <<'PY'
+  │ import json, pathlib
+  │ base=pathlib.Path('/home/ubuntu/marston/phase20_standalone/metrics')
+  │ … +6 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-gy59nl_w because there was an issue with the default path (/home/
+    … +72 lines (ctrl + t to view transcript)
+      }
+    }
+
+• Ran python - <<'PY'
+  │ import json
+  │ pairs=[
+  │ … +7 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-zgmdzsc_ because there was an issue with the default path (/home/
+    … +15 lines (ctrl + t to view transcript)
+    ground_truth_json/bwc.json 0
+    ground_truth_rttm/bwc.rttm 0
+
+• Ran python - <<'PY'
+  │ import json, subprocess, pathlib
+  │ pairs=[
+  │ … +28 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-p5s5yf8h because there was an issue with the default path (/home/
+    … +21 lines (ctrl + t to view transcript)
+    fusion cmp 1
+      counts 11 9 keys ['file', 'method', 'words', 'segments'] ['file', 'method', 'words', 'segments']
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Stage comparison confirms the boundary: ground_truth_json and ground_truth_rttm now match exactly, while grounding/pathA_vad.json is
+  the first differing downstream artifact. I’m checking the VAD implementation and runtime package versions to separate refactor
+  implementation differences from model/environment differences.
+
+• Ran diff -u experiments/phase20_dual_path_improved_vad/scripts/step03_vad.py phase20_standalone/scripts/step03_vad.py | sed -n
+  │ '1,240p'
+  └ --- experiments/phase20_dual_path_improved_vad/scripts/step03_vad.py    2026-07-12 13:49:38.821048631 +0000
+    +++ phase20_standalone/scripts/step03_vad.py    2026-07-15 05:57:24.872417658 +0000
+    … +211 lines (ctrl + t to view transcript)
+         raw = extract_raw_segments(annotation)
+         merged, initial_merges = merge_segments(raw, args.merge_gap)
+
+• Ran git status --short phase20_standalone/scripts/step00_ground_truth.py phase20_standalone/ground_truth_json/bwc.json
+  │ phase20_standalone/ground_truth_rttm/bwc.rttm phase20_standalone/ground_truth/bwc.txt
+  └ ?? phase20_standalone/ground_truth/bwc.txt
+    ?? phase20_standalone/scripts/step00_ground_truth.py
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The VAD script has wrapper/fallback changes in standalone, but the actual run used Pyannote on CUDA, not the fallback. I’m checking
+  whether its core parameters and package versions line up with the published reference before deciding how to classify the remaining
+  mismatch.
+
+• Ran python - <<'PY'
+  │ import importlib.metadata as m
+  │ for pkg in ['torch','torchaudio','whisperx','faster-whisper','ctranslate2','pyannote.audio','nemo_toolkit','numpy','deepfilternet']:
+  │ … +3 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-yue5e1tj because there was an issue with the default path (/home/
+    … +18 lines (ctrl + t to view transcript)
+    numpy 1.26.4
+    deepfilternet 0.5.6
+
+• Ran python - <<'PY'
+  │ import json
+  │ for label,p in [('origA','experiments/phase20_dual_path_improved_vad/grounding/pathA_vad.json'),('newA','phase20_standalone/
+  │ … +6 lines
+  └ /home/ubuntu/.config/matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /tmp/matplotlib-1j83vj1o because there was an issue with the default path (/home/
+    … +17 lines (ctrl + t to view transcript)
+    newB raw 31 merged 30 filtered 30 final 30 total 115.187 max 16.014
+     first3 [{'start': 0.031, 'end': 10.645}, {'start': 10.831, 'end': 11.101}, {'start': 11.371, 'end': 25.495}]
+
+• Ran diff -u experiments/phase20_dual_path_improved_vad/scripts/step03_vad.py phase20_standalone/scripts/step03_vad.py | sed -n
+  │ '240,520p'
+  └ (no output)
+
+• Explored
+  └ Search *environment* in phase20_dual_path_improved_vad
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 • The evidence is consistent: after exact ground-truth restoration, the first divergent artifact is Pyannote VAD output. The old Path A
