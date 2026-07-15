@@ -9,3 +9,806 @@
   Yes. The evaluation steps in the  phase20_standalone  pipeline directly expect pre-computed references:
       • JSON format (for VAD, ASR, and fusion evaluations): bwc.json
       • RTTM format (for diarization evaluation): bwc.rttm
+
+
+---------------
+
+
+IMPORTANT
+
+
+
+This refactor applies ONLY to the standalone release located in
+
+
+
+phase20_standalone/
+
+
+
+Do NOT modify any code outside phase20_standalone/.
+
+
+
+In particular, do NOT modify:
+
+
+
+experiments/
+
+reports/
+
+root-level scripts/
+
+historical phases/
+
+legacy pipelines/
+
+
+
+Those directories are archival research artifacts and should remain unchanged.
+
+You are refactoring the standalone release of the Phase20 conversational intelligence framework to eliminate every hardcoded dependency on the example recording "bwc".
+
+
+
+Repository root:
+
+
+
+phase20_standalone/
+
+
+
+=====================================================================
+
+GOAL
+
+=====================================================================
+
+
+
+The standalone release should become completely self-contained.
+
+
+
+The user should only need to place
+
+
+
+raw_audio/<name>.wav
+
+
+
+and
+
+
+
+ground_truth/<name>.txt
+
+
+
+inside the standalone directory and execute
+
+
+
+python run_phase20.py --file <name>
+
+
+
+For example
+
+
+
+python run_phase20.py --file bwc
+
+
+
+or
+
+
+
+python run_phase20.py --file traffic_stop
+
+
+
+No filenames should be hardcoded anywhere in the repository.
+
+
+
+=====================================================================
+
+NEW DIRECTORY STRUCTURE
+
+=====================================================================
+
+
+
+Ensure the standalone repository contains
+
+
+
+phase20_standalone/
+
+
+
+    raw_audio/
+
+    ground_truth/
+
+    ground_truth_json/
+
+
+
+Create directories if they do not already exist.
+
+
+
+ground_truth_json stores generated JSON files.
+
+
+
+=====================================================================
+
+GROUND TRUTH CONVERTER
+
+=====================================================================
+
+
+
+Create
+
+
+
+scripts/step00_ground_truth.py
+
+
+
+Purpose
+
+
+
+Convert
+
+
+
+ground_truth/<file>.txt
+
+
+
+into
+
+
+
+ground_truth_json/<file>.json
+
+
+
+The converter must support BOTH transcript formats.
+
+
+
+--------------------------------------------------
+
+FORMAT 1
+
+--------------------------------------------------
+
+
+
+Speaker 1 [00:00:00 - 00:00:10]: Hello everyone.
+
+
+
+Speaker 2 [00:00:11 - 00:00:15]: Good morning.
+
+
+
+--------------------------------------------------
+
+FORMAT 2
+
+--------------------------------------------------
+
+
+
+Speaker 1 [00:00:00 - 00:00:10]
+
+Hello everyone.
+
+
+
+Speaker 2 [00:00:11 - 00:00:15]
+
+Good morning.
+
+How are you today?
+
+
+
+Everything until the next timestamp belongs to the same utterance.
+
+
+
+Requirements
+
+
+
+• automatically detect format
+
+• multiline support
+
+• preserve speaker
+
+• preserve timestamps
+
+• concatenate multiline text with spaces
+
+• ignore blank lines
+
+• ignore trailing whitespace
+
+• output EXACT JSON schema already expected by the evaluation scripts
+
+
+
+CLI
+
+
+
+python step00_ground_truth.py \
+
+    --file bwc
+
+
+
+should automatically read
+
+
+
+ground_truth/bwc.txt
+
+
+
+and write
+
+
+
+ground_truth_json/bwc.json
+
+
+
+Logic
+
+
+
+if json exists and --overwrite NOT supplied
+
+
+
+    skip conversion
+
+
+
+else
+
+
+
+    regenerate json
+
+
+
+=====================================================================
+
+RUN PHASE20
+
+=====================================================================
+
+
+
+Modify
+
+
+
+run_phase20.py
+
+
+
+Replace
+
+
+
+--audio
+
+
+
+with
+
+
+
+--file
+
+
+
+Example
+
+
+
+python run_phase20.py --file bwc
+
+
+
+Internally construct
+
+
+
+raw_audio/bwc.wav
+
+
+
+Do NOT require the user to manually specify any paths.
+
+
+
+=====================================================================
+
+PIPELINE ORDER
+
+=====================================================================
+
+
+
+Insert the new preprocessing stage BEFORE audio preprocessing.
+
+
+
+step00_ground_truth
+
+
+
+↓
+
+
+
+step01_preprocess
+
+
+
+↓
+
+
+
+step02...
+
+
+
+The new execution order becomes
+
+
+
+00 Ground Truth Conversion
+
+01 Audio Preprocessing
+
+02 DeepFilterNet
+
+03 Loudness Normalization
+
+04 Path A VAD
+
+05 Path B VAD
+
+06 Path A Evaluation
+
+07 Path B Evaluation
+
+08 WhisperX
+
+09 MSDD
+
+10 ASR Evaluation
+
+11 Diarization Evaluation
+
+12 Fusion
+
+13 Fusion Evaluation
+
+14 Aggregate Report
+
+15 Phase19 Comparison
+
+
+
+=====================================================================
+
+REMOVE ALL HARDCODED FILENAMES
+
+=====================================================================
+
+
+
+Audit EVERY script inside
+
+
+
+scripts/
+
+
+
+and remove every hardcoded reference such as
+
+
+
+bwc.wav
+
+bwc.txt
+
+bwc.json
+
+bwc.rttm
+
+bwc_dfn.wav
+
+bwc_normalized.wav
+
+pathA_vad.json
+
+pathB_vad.json
+
+
+
+Instead, every script must receive
+
+
+
+--file
+
+
+
+through argparse.
+
+
+
+Example
+
+
+
+python step03_vad.py \
+
+    --file bwc \
+
+    --path-name pathA
+
+
+
+The script itself should derive
+
+
+
+audio/bwc_dfn.wav
+
+
+
+Likewise
+
+
+
+python step05a_msdd.py \
+
+    --file bwc
+
+
+
+should derive
+
+
+
+grounding/bwc_pathA_vad.json
+
+
+
+internally.
+
+
+
+=====================================================================
+
+ALL OUTPUTS MUST INCLUDE THE RECORDING NAME
+
+=====================================================================
+
+
+
+Running
+
+
+
+python run_phase20.py --file traffic_stop
+
+
+
+should generate
+
+
+
+audio/
+
+    traffic_stop_repaired.wav
+
+    traffic_stop_dfn.wav
+
+    traffic_stop_normalized.wav
+
+
+
+grounding/
+
+    traffic_stop_pathA_vad.json
+
+    traffic_stop_pathB_vad.json
+
+
+
+transcripts/
+
+    traffic_stop_whisperx.json
+
+    traffic_stop_aligned.json
+
+
+
+diarization/
+
+    traffic_stop.rttm
+
+
+
+metrics/
+
+    traffic_stop_pathA_vad_metrics.json
+
+    traffic_stop_pathB_vad_metrics.json
+
+    traffic_stop_asr_metrics.json
+
+    traffic_stop_diar_metrics.json
+
+    traffic_stop_fusion_metrics.json
+
+
+
+reports/
+
+    traffic_stop_pathA_vad_report.md
+
+    traffic_stop_pathB_vad_report.md
+
+    traffic_stop_final_report.md
+
+
+
+Every generated artifact should be recording-specific.
+
+
+
+Running multiple recordings should never overwrite previous results.
+
+
+
+=====================================================================
+
+BACKWARD COMPATIBILITY
+
+=====================================================================
+
+
+
+Running
+
+
+
+python run_phase20.py --file bwc
+
+
+
+must reproduce the current behaviour and output identical metrics.
+
+
+
+Only filenames should change.
+
+
+
+=====================================================================
+
+CODE STYLE
+
+=====================================================================
+
+
+
+Requirements
+
+
+
+• pathlib everywhere
+
+• argparse everywhere
+
+• typed Python
+
+• no duplicated code
+
+• deterministic behaviour
+
+• robust regex parsing
+
+• descriptive docstrings
+
+• informative exceptions
+
+• no hardcoded filenames anywhere
+
+
+
+=====================================================================
+
+FINAL VERIFICATION
+
+=====================================================================
+
+
+
+Only audit the standalone release.
+
+1.  
+
+Search recursively inside
+
+
+
+phase20_standalone/
+
+
+
+for
+
+
+
+"bwc"
+
+
+
+List every remaining occurrence.
+
+
+
+Each remaining occurrence must be one of the following:
+
+
+
+• documentation
+
+• comments
+
+• README examples
+
+• example commands
+
+• sample filenames shown for illustration
+
+
+
+There should be NO executable Python code inside phase20_standalone that depends on the literal filename "bwc".
+
+
+
+Any executable code should instead derive filenames from the value supplied through
+
+
+
+--file
+
+2. 
+
+
+
+List every modified file.
+
+
+
+3.
+
+
+
+Briefly explain the change made to each file.
+
+
+
+4.
+
+
+
+Provide example commands
+
+
+
+python run_phase20.py --file bwc
+
+
+
+python run_phase20.py --file traffic_stop
+
+
+
+5.
+
+
+
+Confirm that running two different recordings sequentially produces independent outputs without overwriting each other.
+
+===========================================================
+END-TO-END VALIDATION
+===========================================================
+
+After completing all modifications, perform a complete end-to-end validation.
+
+Run
+
+python run_phase20.py --file bwc
+
+using the existing sample data already present in the repository.
+
+Verify that:
+
+• the ground truth JSON is generated correctly (or skipped if it already exists and --overwrite is not supplied)
+• preprocessing completes successfully
+• DeepFilterNet completes
+• loudness normalization completes
+• Path A VAD completes
+• Path B VAD completes
+• VAD evaluation completes
+• WhisperX transcription completes
+• MSDD diarization completes
+• ASR evaluation completes
+• diarization evaluation completes
+• speaker-attribution fusion completes
+• fusion evaluation completes
+• aggregate report generation completes
+• baseline comparison completes
+
+Confirm that the pipeline exits successfully with no errors.
+
+Verify that all expected output files are created using the supplied filename
+(e.g. "bwc") rather than hardcoded names.
+
+If any stage fails because of assumptions introduced by the refactor,
+fix the underlying issue and rerun the complete pipeline until it succeeds.
+
+===========================================================
+FINAL DELIVERABLE
+===========================================================
+
+Provide:
+
+1. List of modified files.
+
+2. Summary of every modification.
+
+3. Example usage:
+
+python run_phase20.py --file bwc
+
+python run_phase20.py --file traffic_stop
+
+python run_phase20.py --file traffic_stop --overwrite
+
+4. List any remaining assumptions or limitations.
+
+5. Confirm that an end-to-end execution using
+
+python run_phase20.py --file bwc
+
+completed successfully and that no executable code inside
+phase20_standalone/ depends on the literal filename "bwc".
