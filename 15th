@@ -1,3 +1,147 @@
+The refactor is now complete.
+
+Your task is NOT to modify the implementation unless you discover a genuine bug.
+
+====================================================================
+OBJECTIVE
+====================================================================
+
+Activate the existing virtual environment (already activated in this shell) and
+perform a full end-to-end validation of the standalone Phase 20 pipeline.
+
+Run the complete pipeline using
+
+python run_phase20.py --file bwc --overwrite
+
+Do not use the system Python. Use the currently activated environment.
+
+====================================================================
+REFERENCE
+====================================================================
+
+The repository contains the original reference metrics in
+
+results_to_be_published.md
+
+These are the authoritative expected metrics from the original Phase 20
+implementation before the standalone refactor.
+
+====================================================================
+VALIDATION
+====================================================================
+
+After the pipeline completes,
+
+compare every generated metric against the reference values in
+results_to_be_published.md.
+
+Compare at least:
+
+• Path A VAD
+    - Precision
+    - Recall
+    - F1
+    - False Alarm
+    - Miss
+
+• Path B VAD
+    - Precision
+    - Recall
+    - F1
+    - False Alarm
+    - Miss
+
+• ASR
+    - WER
+    - Substitutions
+    - Insertions
+    - Deletions
+    - Reference Words
+
+• Speaker Diarization
+    - DER
+    - Miss
+    - False Alarm
+    - Confusion
+    - JER
+
+• Fusion
+    - Speaker Accuracy
+    - Word Attribution Error
+    - Timeline Accuracy
+
+====================================================================
+REPORT
+====================================================================
+
+Produce a comparison table
+
+Metric | Expected | Obtained | Match?
+
+For every metric.
+
+Use exact numeric comparison where appropriate.
+If floating-point differences exist, report both values and the absolute
+difference.
+
+====================================================================
+IF EVERYTHING MATCHES
+====================================================================
+
+Clearly state
+
+"The standalone refactor preserves the numerical behaviour of the original
+Phase 20 implementation."
+
+====================================================================
+IF SOMETHING DOES NOT MATCH
+====================================================================
+
+Do NOT immediately change code.
+
+Instead,
+
+1. identify the first pipeline stage where outputs diverge;
+
+2. identify the likely cause;
+
+3. explain whether the discrepancy is caused by
+
+- filename refactoring
+- environment differences
+- regenerated intermediate files
+- evaluation scripts
+- model inference
+- another issue
+
+Only if you can clearly identify a genuine implementation bug should you modify
+the code.
+
+After fixing the bug,
+
+rerun the complete pipeline
+
+python run_phase20.py --file bwc --overwrite
+
+until the generated metrics agree with the reference implementation.
+
+====================================================================
+FINAL OUTPUT
+====================================================================
+
+Provide:
+
+1. Complete comparison table.
+
+2. Whether every metric matches.
+
+3. Any differences observed.
+
+4. If fixes were required, list every modified file and explain why.
+
+5. Confirm whether the standalone implementation is numerically equivalent to
+the original Phase 20 implementation.
+
 • The exact command exited successfully and created the new recording-prefixed outputs, but it used fallback paths for Pyannote VAD,
   WhisperX, and NeMo because the unactivated python on PATH lacks those optional packages. I’m checking the bundled .venv now so I can
   validate against the intended standalone environment rather than only the system interpreter.
