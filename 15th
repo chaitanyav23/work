@@ -812,3 +812,65 @@ python run_phase20.py --file bwc
 
 completed successfully and that no executable code inside
 phase20_standalone/ depends on the literal filename "bwc".
+
+
+--------------------------------------
+
+• Implemented only under phase20_standalone/.
+
+  Modified Source Files
+
+  - phase20_standalone/run_phase20.py: replaced --audio with required --file; added step00; passes recording stem through every stage.
+  - phase20_standalone/scripts/common.py: added shared RecordingPaths, --file helper, filename validation, and required directory
+    creation.
+
+  - phase20_standalone/scripts/step00_ground_truth.py: new TXT-to-JSON converter with multiline parsing, JSON skip behavior, and derived
+    RTTM sidecar.
+
+  - phase20_standalone/scripts/step01_preprocess.py: derives raw_audio/<file>.wav and audio/<file>_repaired.wav.
+  - phase20_standalone/scripts/step02a_deepfilternet.py: derives <file>_repaired.wav to <file>_dfn.wav.
+  - phase20_standalone/scripts/step02b_loudnorm.py: derives <file>_repaired.wav to <file>_normalized.wav.
+  - phase20_standalone/scripts/step03_vad.py: derives Path A/B inputs and writes <file>_pathA_vad.json, <file>_pathB_vad.json.
+  - phase20_standalone/scripts/step04_vad_eval.py: derives recording-specific VAD metrics/reports.
+  - phase20_standalone/scripts/step05a_msdd.py: derives recording-specific MSDD inputs, manifest, oracle RTTM, and diarization/
+    <file>.rttm.
+
+  - phase20_standalone/scripts/step05b_whisperx.py: derives recording-specific WhisperX outputs under transcripts/.
+  - phase20_standalone/scripts/step06a_diar_eval.py: derives <file>_diar_metrics.json.
+  - phase20_standalone/scripts/step06b_asr_eval.py: derives <file>_asr_metrics.json.
+  - phase20_standalone/scripts/step07_fusion.py: derives recording-specific fusion JSON/TXT.
+  - phase20_standalone/scripts/step08_fusion_eval.py: derives <file>_fusion_metrics.json.
+  - phase20_standalone/scripts/step09_aggregate_report.py: derives <file>_all_metrics.json, <file>_pipeline_metrics.json, and
+    <file>_final_report.md.
+
+  - phase20_standalone/scripts/step10_compare_phase19.py: reads recording-specific Phase20 outputs while keeping Phase19 reference read-
+    only.
+
+  Validation
+
+  - Ran python -m compileall ...: passed.
+  - Ran python run_phase20.py --file bwc: completed successfully with exit code 0.
+  - Verified executable Python has no bwc literals: rg -n "bwc" phase20_standalone --glob '*.py' ... returned no matches.
+  - Verified recording-specific outputs were created, including:
+      - audio/bwc_repaired.wav, audio/bwc_dfn.wav, audio/bwc_normalized.wav
+      - grounding/bwc_pathA_vad.json, grounding/bwc_pathB_vad.json
+      - transcripts/bwc_whisperx.json, transcripts/bwc_aligned.json
+      - diarization/bwc.rttm
+      - metrics/bwc_*_metrics.json
+      - reports/bwc_final_report.md
+
+  Remaining bwc Occurrences
+  No executable Python code depends on bwc. Remaining matches are in documentation, historical/reference artifacts, existing sample
+  data, and generated bwc validation outputs. The file-level remaining match list includes docs like README.md, DEPENDENCY_REPORT.md,
+  existing sample/reference files like raw_audio/bwc.wav, ground_truth_json/bwc.json, ground_truth_rttm/bwc.rttm, phase19_reference/...,
+  legacy generated outputs/reports, and new validation artifacts named bwc_*.
+
+  Usage
+
+  python run_phase20.py --file bwc
+  python run_phase20.py --file traffic_stop
+  python run_phase20.py --file traffic_stop --overwrite
+
+  Sequential recordings are independent by construction: all generated pipeline paths derive from --file, so traffic_stop writes
+  traffic_stop_* artifacts and does not overwrite bwc_* artifacts. One limitation: --overwrite for an existing JSON requires
+  ground_truth/<file>.txt; the current bwc sample has existing JSON/RTTM, so the non-overwrite command works and skips conversion.
