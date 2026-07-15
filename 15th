@@ -1,3 +1,234 @@
+Perform the final release validation and cleanup for the Phase20 standalone repository.
+
+IMPORTANT
+
+- Do NOT modify any algorithmic code unless a genuine bug is discovered.
+- Do NOT change numerical behavior.
+- Do NOT change model versions.
+- Do NOT change the published environment.
+- Do NOT create any commits.
+- Do NOT create any git tags.
+- Do NOT push anything.
+
+Your job is to validate the release and prepare it for publication.
+
+===========================================================
+1. VERIFY .venv
+===========================================================
+
+First inspect
+
+phase20_standalone/.venv
+
+Determine whether it is
+
+- a normal virtual environment
+- or a symlink created during previous validation.
+
+If it is a symlink, report it.
+
+Do NOT silently replace it.
+
+Instead explain exactly what should be done to restore it to a normal venv.
+
+===========================================================
+2. VERIFY GROUND TRUTH PARSER
+===========================================================
+
+Run
+
+python scripts/step00_ground_truth.py --file bwc --overwrite
+
+(or the equivalent CLI)
+
+Compare
+
+ground_truth/bwc.txt
+
+against
+
+ground_truth_json/bwc.json
+
+Verify
+
+- number of utterances
+- speaker labels
+- timestamps
+- total reference words
+
+The generated JSON should match the original expected structure used by the evaluation pipeline.
+
+Specifically determine whether the parser now reproduces the expected 48 utterances rather than the earlier incorrect 54.
+
+If there is still any discrepancy, explain precisely why.
+
+===========================================================
+3. CLEAN PIPELINE TEST
+===========================================================
+
+Delete ONLY generated artifacts.
+
+Do NOT delete
+
+raw_audio/
+ground_truth/
+ground_truth_json/
+environment/
+scripts/
+models/
+.cache/
+
+Delete only generated outputs such as
+
+audio/
+grounding/
+transcripts/
+diarization/
+metrics/
+reports/
+
+(or the equivalent generated directories).
+
+Then execute
+
+python run_phase20.py --file bwc
+
+using the published standalone environment.
+
+The pipeline must complete successfully.
+
+===========================================================
+4. VALIDATE METRICS
+===========================================================
+
+Compare every generated metric against the published reference values from
+
+results_to_be_published.md
+
+Compare
+
+- Path A VAD
+- Path B VAD
+- ASR
+- Diarization
+- Fusion
+
+Report
+
+PASS
+
+if values match within normal floating-point tolerance.
+
+Otherwise report every mismatch.
+
+===========================================================
+5. VERIFY GENERALIZATION
+===========================================================
+
+Audit the repository.
+
+Verify that executable code no longer depends on
+
+bwc
+
+Search only
+
+phase20_standalone/
+
+Executable Python code should not contain hardcoded filenames.
+
+Remaining occurrences are acceptable only in
+
+- documentation
+- README
+- comments
+- sample data
+- example commands
+- generated outputs
+
+Report any remaining executable occurrences.
+
+===========================================================
+6. README VALIDATION
+===========================================================
+
+If the README does not already contain a short validation section, append one.
+
+Use wording similar to
+
+------------------------------------------------
+
+## Validation
+
+The standalone implementation has been validated against the original Phase 20 implementation.
+
+Using the published frozen environment, the standalone release reproduces
+
+- VAD outputs
+- WhisperX outputs
+- MSDD outputs
+- Speaker attribution outputs
+- Published evaluation metrics
+
+within normal floating-point precision.
+
+------------------------------------------------
+
+Do not modify any other README content.
+
+===========================================================
+7. VERIFY FROZEN ENVIRONMENT
+===========================================================
+
+Ensure the following directory still exists unchanged
+
+environment/
+
+Verify the presence of
+
+requirements.lock
+requirements_frozen.txt
+pip_freeze.txt
+environment_snapshot.json
+environment_hashes.json
+package_hashes.txt
+dependency_tree.txt
+model_manifest.md
+environment_report.md
+
+Do not modify them.
+
+===========================================================
+8. FINAL RELEASE REPORT
+===========================================================
+
+Do NOT commit.
+
+Do NOT tag.
+
+Instead produce a release report containing
+
+1. Pipeline execution status
+
+2. Ground-truth parser validation
+
+3. Metric comparison
+
+4. Remaining hardcoded filename occurrences (if any)
+
+5. README modification (if any)
+
+6. Whether the repository is ready for release
+
+If every validation passes, finish with exactly
+
+RELEASE STATUS: READY
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 • I’ll treat the code as frozen and compare the active phase20_standalone/.venv against the published manifests under
   phase20_standalone/environment/. I’ll first inventory Python, installed packages, lockfile expectations, and model cache metadata
   before making any environment changes.
