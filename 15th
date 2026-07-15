@@ -1,3 +1,81 @@
+
+• Pipeline completed successfully with the active venv Python:
+
+  /home/ubuntu/marston/phase20_standalone/.venv/bin/python
+
+  I ran:
+
+  python run_phase20.py --file bwc --overwrite
+
+  from phase20_standalone/. The first attempt exposed a missing standalone input transcript, so I copied the existing root fixture
+  ground_truth/bwc.txt into phase20_standalone/ground_truth/bwc.txt. No implementation code was changed.
+
+  Comparison
+
+   Metric                           Expected             Obtained    Match?
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━
+   Path A VAD Precision             0.844796    0.862516093433879    No, Δ=0.017720093434
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path A VAD Recall                0.772101    0.768770491803279    No, Δ=0.003330508197
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path A VAD F1                    0.806814    0.812949640287770    No, Δ=0.006135640288
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path A VAD False Alarm           0.299079    0.279752994011976    No, Δ=0.019326005988
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path A VAD Miss                  0.227899    0.231229508196721    No, Δ=0.003330508197
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path B VAD Precision             0.841664    0.857353195912004    No, Δ=0.015689195912
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path B VAD Recall                0.766975    0.811393442622951    No, Δ=0.044418442623
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path B VAD F1                    0.802585    0.833740419439063    No, Δ=0.031155419439
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path B VAD False Alarm           0.304217    0.308196107784431    No, Δ=0.003979107784
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Path B VAD Miss                  0.233025    0.188606557377049    No, Δ=0.044418442623
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   ASR WER                          0.324380    0.772908366533865    No, Δ=0.448528366534
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   ASR Substitutions                      86                  121    No, Δ=35
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   ASR Insertions                         26                   61    No, Δ=35
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   ASR Deletions                          45                  206    No, Δ=161
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   ASR Reference Words                   484                  502    No, Δ=18
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Diarization DER                  0.447059    0.445772357723577    No, Δ=0.001286642276
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Diarization Miss                 0.230000    0.239349593495935    No, Δ=0.009349593496
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Diarization False Alarm          0.139916    0.119674796747967    No, Δ=0.020241203252
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Diarization Confusion            0.077143    0.086747967479675    No, Δ=0.009604967480
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Diarization JER                  0.842448    0.791298436437797    No, Δ=0.051149563562
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Fusion Speaker Accuracy          0.902743    0.922360248447205    No, Δ=0.019617248447
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Fusion Word Attribution Error    0.097257    0.077639751552795    No, Δ=0.019617248447
+  ───────────────────────────────  ──────────  ───────────────────  ──────────────────────
+   Fusion Timeline Accuracy         0.705312    0.593023255813953    No, Δ=0.112288744186
+
+  Every requested metric diverged.
+
+  First confirmed divergence: stage 00 ground-truth regeneration. The standalone regenerated ground_truth_json/bwc.json from TXT with 54
+  segments, while the existing root reference JSON has 48 segments; speaker labels also differ, e.g. Speaker 1 vs Speaker_1. That
+  explains the ASR Reference Words mismatch: 502 obtained vs 484 expected.
+
+  There are also clear environment/model-output differences. The current venv reports pyannote.audio 3.4.0, whisperx 3.2.0, faster-
+  whisper 1.0.0, ctranslate2 4.8.1, and numpy 1.26.4, while the published reference lists different versions. Regenerated Path B VAD
+  produced 30 segments, not the reference 41, and WhisperX produced 373 aligned words, not 465.
+
+  No implementation bug was clear enough to justify code changes. No fixes were applied.
+
+  The standalone implementation is not numerically equivalent to the original Phase 20 implementation in this validation run.
+
+--------------------------
+
 The refactor is now complete.
 
 Your task is NOT to modify the implementation unless you discover a genuine bug.
