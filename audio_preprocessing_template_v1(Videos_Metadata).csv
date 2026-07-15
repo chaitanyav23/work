@@ -1,0 +1,131 @@
+﻿Video_ID,Video_Name,Video_Source,Video_Location_Link,Video_Type (Indoor/Outdoor),Environment_Details,Language,Accent + Dialect,Audio_Duration,No_of_Speakers,Single/Multi_Channel,Sampling_Rate,Audio_Format,Backgorund_Noise,Background_Noise_Type,Overlap_Speech_Present,Emotion_Present,Recording_Device,Ground_Truth_Available,Use_Case,Remarks,,,
+"Vid_ID_001, Vid_OD_001, Vid_Pod_001, Vid_News_001",Name of the Video,"YT, Kaggle Etc","YT link, Kaggle link Download link",,"Recording Environment:
+•	Indoor / Outdoor / Hybrid environment
+•	Example Scenario: Two-person conversation recorded outside a residential area
+Observed Environmental Conditions & Background Noises:
+•	Vehicle movement sounds
+•	Car honking noise
+•	Wind interference/noise
+•	Emergency siren sounds
+•	Dog barking in the background
+Speech Characteristics:
+•	Overlapping speech between speakers
+•	Presence of distant/background speakers
+•	Third person speaking from a far distance
+•	Variations in speaker volume and clarity
+Video / Audio Interaction Type:
+•	Conversational dialogue
+•	Multi-speaker interaction
+•	Real-world noisy environment recording
+Additional Acoustic Observations:
+•	Background noise intensity level
+•	Intermittent environmental disturbances
+•	Reverberation / echo presence (if applicable)
+•	Speech intelligibility under noisy conditions",English,"US English, UK English",30.67,Number of speackers in,Single_Channel,16Khz,"WAV, MP3","We need to create a mechanism to define noise level
+No Noise (May be indoor) Podcast
+Low
+Medium
+High","Traffic
+wind
+crowd
+siren
+rain
+vehicle engine
+indoor echo
+body movement
+radio chatter
+low-volume speech",Yes or No,"Neutral, Conversational, Shouting, Crying","Mobile Phoe, BWC, Studio Mice",Yes,Speaker Diarization + ASR Testing,,,,
+Vid_OD_001,Cheap Shot,YT,https://www.youtube.com/watch?v=_6piL1TExWE&pp=ygUuVGhhdCB3YXMgYSBiaXQgb2YgYSBjaGVhcCBzaG90IHdlcmVuJ3QgaXQgbWF0ZQ%3D%3D,Outdoor,Outdoor,English,UK English,2m 55s,4,Single_Channel,16Khz,wav,high,wind,"yes, overlap","netrual, conversational, shouting",bwc,Yes,speaker diarization + asr,,,,
+Vid_OD_002,Karen,YT,https://www.youtube.com/watch?v=Ym8xMOFkxMQ,Outdoor,"Outdoor
+Vehicle movement sounds
+Car honking noise
+Wind interference/noise
+Overlapping speech between speakers
+Real-world noisy environment recording",English,USEnglish,17m 04 sec (tested till 7m05sec),,Single_Channel,16Khz,wav,high,"Traffic, Honking, Wind","yes, overlap (multiple instances)","Angry, High voice",bwc,Yes (till 7m 05 sec),speaker diarization + asr,,,,
+Vid_OD_003,Rich Karen Messes Around & Finds Out,YT,https://www.youtube.com/watch?v=UalMMH8Bb4g&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=9,Outdoor,"Recording Environment:
+• Outdoor
+• Police surrounded a car and conversation recorded outside a residential area
+Observed Environmental Conditions & Background Noises:
+• Vehicle movement sounds
+• Car honking noise
+• Wind interference/noise
+• Emergency siren sounds
+• Dog barking in the background
+• Clicking sound of a camera
+• Shattering glass sound
+Speech Characteristics:
+• Overlapping speech between speakers - Yes
+• Presence of distant/background speakers - Yes
+• Third person speaking from a far distance - None
+• Variations in speaker volume and clarity - Yes
+Video / Audio Interaction Type:
+• Real-world noisy environment recording
+Additional Acoustic Observations:
+• Background noise intensity level - Medium
+• Intermittent environmental disturbances - Low
+• Reverberation / echo presence (if applicable) - None
+• Speech intelligibility under noisy conditions - Clear",English,US English,10.52,9,Single_Channel,16Khz,wav,Medium (Outdoor),"Siren, Honking, Wind, Dog barking, Glass breaking, Camera clicking",Yes,"Shouting, Conversational",Body-Worn Camera (BWC),Yes,,,,,
+Vid_OD_004,Police bodycam shows arrest of Southwest Airlines pilot for alleged alcohol consumption,YT,https://www.youtube.com/watch?v=i1lMoJ8jaOQ&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=7,Indoor (Inside a flight),"Recording Environment:
+• Indoor (Inside a flight)
+• Police investigated a drunken pilot and conversation recorded inside a flight cabin.
+Observed Environmental Conditions & Background Noises:
+• Flight engine noise
+• Wind interference/noise
+• Handcuff noise
+Speech Characteristics:
+• Overlapping speech between speakers - Yes
+• Presence of distant/background speakers - Yes
+• Third person speaking from a far distance - None
+• Variations in speaker volume and clarity - Yes
+Video / Audio Interaction Type:
+• Conversational dialogue
+• Real-world noisy environment recording
+Additional Acoustic Observations:
+• Background noise intensity level - High
+• Intermittent environmental disturbances - Medium
+• Reverberation / echo presence (if applicable) - None
+• Speech intelligibility under noisy conditions - Medium",English,US English,2.42,4,Single_Channel,16Khz,wav,High (Indoor- Inside a flight),"Flight engine noise, Wind, Handcuff noise",Yes,Conversational,Body-Worn Camera (BWC),Yes,,,,,
+Vid_OD_005,Drunk Karen Gets a Huge Reality Check,YT,https://www.youtube.com/watch?v=GbJEdFb81ZE&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=11,Outdoor and Indoor,"Recording Environment:
+• Outdoor (Parking lot and store)
+• Police investigated a drunken lady and conversation recorded in a Parking lot.
+• Another one Police arrested a lady for trespassing in store and conversation recorded in that store.
+Observed Environmental Conditions & Background Noises:
+• Clicking sound of a camera
+• Emergency siren sounds
+• Wind interference/noise
+• Car door closing sound
+• Handbag zipper sound
+• Handcuff noise
+• Phone ringing
+Speech Characteristics:
+• Overlapping speech between speakers - Yes
+• Presence of distant/background speakers - Yes
+• Third person speaking from a far distance - Yes
+• Variations in speaker volume and clarity - Yes
+Video / Audio Interaction Type:
+• Multi-speaker interaction
+• Conversational dialogue
+• Real-world noisy environment recording
+Additional Acoustic Observations:
+• Background noise intensity level - Low
+• Intermittent environmental disturbances - Low
+• Reverberation / echo presence (if applicable) - None
+• Speech intelligibility under noisy conditions - Medium",English,US English,17.35,17,Single_Channel,16Khz,wav,Medium (Outdoor - Parking lot and store),"Siren, Wind, Handcuff noise, Car door closing sound, Camera clicking, Handbag zipper sound, Handcuff noise",Yes,"Shouting, Conversational, Crying",Body-Worn Camera (BWC),Yes,,,,,
+Vid_OD_006,When an Entitled Girl Gets Instantly Humbled,YT,Your self-discovery companion,Outdoor,"Example Scenario: Poolside misbehavior by a group resulted in a girl’s arrest. First half of the video is very noisy, It's a outdoor Pool Area, Background Noises: Crowd babble, Wind inference , Speech Charecteristics: Overlapping between Speakers, Variations in Speaker volume and clarity.",English,US English,16.52,Approx 11,Single_Channel,16Khz,wav,High,"Wind, Public Chatter",Yes,"Shouting, Crying, Ordering",BWC,Yes,,,,,
+Vid_OD_007,Bodycam footage show arrests of Sara Sharif's alleged killers,YT,Bodycam footage show arrests of Sara Sharif's alleged killers,Hybrid,"Example Scenario:Police arrested a man on a plane in connection with the murder of Sara Sharif.. Little bit noisy, It's a Inside aeroplane (Hybrid) Background Noises: Crowd babble, Speech Charecteristics: Overlapping between Speakers, Variations in Speaker volume and clarity.",English,US English,1.4,5,Single_Channel,16Khz,wav,Medium,Public Chatter,Yes,Ordering,BWC,Yes,,,,,
+Vid_OD_008,Good Morning Britain video,YT,Piers Confronts Tommy Robinson Over Controversial Muslim Comments | Good Morning Britain,Indoor,"Example Scenario: Converstational Debate Not Much Noisy Indoor , Speech Charaecteristics : Overlapping between Speaker's",English,UK English,3.25,3,Single_Channel,16Khz,wav,Low,Overlapping Speech,Yes,Conversational,Studio Mic,Yes,,,,,
+Vid_OD_009,UK Parliament Debate,YT,https://www.youtube.com/watch?v=zhO3d7SEaRg&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=1,Indoor,"Example Scenario: Converstational Debate Not Much Noisy Indoor , Speech Charaecteristics : Overlapping between Speaker's",English,UK English,3.35,5,Single_Channel,16Khz,wav,Low,Public Chatter,Yes (less instances),Conversational,Professional MIc,Yes,,,,,
+Vid_OD_010,Dennis Skinner Kicked Out,YT,https://www.youtube.com/watch?v=qvIUa47x_Oc&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=4,Indoor,"Example Scenario: Converstational Debate Not Much Noisy Indoor , Speech Charaecteristics : Overlapping between Speaker's",English,UK English,2.56,6,Single_Channel,16Khz,wav,Medium,Public Chatter,Yes (many instances),"Conversational, Angry",Professional MIc,Yes,,,,,
+Vid_OD_011,Entitled Karen Refuses to Pay Restaurant Bill,YT,https://www.youtube.com/watch?v=0KFqZ4hP9nU&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=8,Outdoor and Indoor,"Outdoor
+Vehicle movement sounds
+Car honking noise
+Wind interference/noise
+Overlapping speech between speakers
+Real-world noisy environment recording",English,UK English,14.16,10,Single_Channel,16Khz,wav,High (Outdoor),"Wind, Public Chatter",Yes (many instances),"Angry, High voice",BWC,Yes,,,,,
+Vid_OD_012,Karen Has A Problem With Disabled Parking,YT,https://www.youtube.com/watch?v=XwL3iEGbhf8&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=10,Outdoor,Outdoor,English,UK English,3.26,5,Single_Channel,16Khz,wav,Low,Wind,Yes (less instances),Conversational,Phone Camera,Yes,,,,,
+Vid_OD_013,Woman's Attitude Makes Traffic Stop 10x Worse,YT,https://www.youtube.com/watch?v=v4zmJ6WUdIE&list=PLSX5Ki474Krd5g3qcsp6uYRsZuNSVaMWV&index=13,Outdoor,"Outdoor
+Vehicle movement sounds
+Car honking noise
+Wind interference/noise
+Overlapping speech between speakers
+Real-world noisy environment recording",English,UK English,17.37,9,Single_Channel,16Khz,wav,High,"Traffic, Rumble",Yes (many instances),"Angry, High Voice, Shouting, Crying",BWC,Yes,,,,,
