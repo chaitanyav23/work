@@ -1,3 +1,108 @@
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• The evidence is consistent: after exact ground-truth restoration, the first divergent artifact is Pyannote VAD output. The old Path A
+  raw VAD count was 47 and new is 45; old Path B raw count was 42 and new is 31, before ASR/MSDD/fusion can affect anything downstream.
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• Implemented the deterministic parser fix and reran the full pipeline.
+
+  1. step00_ground_truth.py now reproduces the original BWC ground truth JSON byte-for-byte:
+     cmp ground_truth_json/bwc.json phase20_standalone/ground_truth_json/bwc.json -> match.
+     The regenerated RTTM also now matches byte-for-byte.
+
+  2. First remaining divergence:
+     grounding/pathA_vad.json.
+
+     Stage comparison:
+
+      Stage                 Result
+     ━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      ground_truth_json     matches
+     ────────────────────  ─────────────────────────────────────────────────────
+      ground_truth_rttm     matches
+     ────────────────────  ─────────────────────────────────────────────────────
+      pathA_vad.json        diverges: original 46 final segments, standalone 44
+     ────────────────────  ─────────────────────────────────────────────────────
+      pathB_vad.json        diverges: original 41 final segments, standalone 30
+     ────────────────────  ─────────────────────────────────────────────────────
+      aligned_words.json    diverges: original 465, standalone 407
+     ────────────────────  ─────────────────────────────────────────────────────
+      diarization RTTM      diverges: original 46 lines, standalone 44
+     ────────────────────  ─────────────────────────────────────────────────────
+      fusion output         diverges: original 11 segments, standalone 9
+
+  3. Classification:
+     The parser issue is fixed. The remaining divergence is environment/model-version related VAD inference, not evaluation code and not
+     ground-truth parsing. Evidence: the first differing artifact is raw Pyannote VAD output, before ASR/MSDD/fusion. Current venv
+     versions differ from results_to_be_published.md: current pyannote.audio 3.4.0, whisperx 3.2.0, faster-whisper 1.0.0, ctranslate2
+     4.8.1, numpy 1.26.4; published reference lists pyannote.audio 4.0.4, whisperx 3.8.5, faster-whisper 1.2.1, ctranslate2 4.7.2, numpy
+     2.2.6.
+
+  4. Modified file:
+     phase20_standalone/scripts/step00_ground_truth.py
+     Added legacy BWC curation to match the original JSON exactly, normalized speaker labels to Speaker_N, preserved zero-duration RTTM
+     rows.
+
+  Final Metrics
+
+   Metric                           Expected               Obtained    Match?
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━
+   Path A VAD Precision             0.844796     0.8515725583961744    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path A VAD Recall                0.772101     0.7781512605042017    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path A VAD F1                    0.806814     0.8132080442609994    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path A VAD False Alarm           0.299079     0.2859673990077959    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path A VAD Miss                  0.227899     0.2218487394957983    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path B VAD Precision             0.841664     0.8421098215832323    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path B VAD Recall                0.766975     0.8170588235294117    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path B VAD F1                    0.802585     0.8293952060052888    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path B VAD False Alarm           0.304217     0.3229978738483345    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Path B VAD Miss                  0.233025    0.18294117647058825    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   ASR WER                          0.324380     0.7066115702479339    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   ASR Substitutions                      86                    185    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   ASR Insertions                         26                     40    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   ASR Deletions                          45                    117    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   ASR Reference Words                   484                    484    Yes
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Diarization DER                  0.447059    0.44428571428571445    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Diarization Miss                 0.230000    0.22378151260504237    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Diarization False Alarm          0.139916     0.1336974789915964    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Diarization Confusion            0.077143    0.08680672268907567    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Diarization JER                  0.842448      0.843721426394392    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Fusion Speaker Accuracy          0.902743     0.8877005347593583    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Fusion Word Attribution Error    0.097257    0.11229946524064172    No
+  ───────────────────────────────  ──────────  ─────────────────────  ────────
+   Fusion Timeline Accuracy         0.705312      0.688953488372093    No
+
+  Parser equivalence is restored. Full numerical equivalence is still not restored because the first remaining divergence is model
+  inference output at Pyannote VAD under a different runtime environment.
+
+
+-------------------
+
+
+
+
 The Phase20 standalone refactor is complete and the pipeline runs successfully.
 
 However, the generated metrics no longer match the original Phase20 implementation.
