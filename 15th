@@ -1,0 +1,11 @@
+  ### Summary of Findings
+
+  1. Does a conversion script exist in  phase20_standalone ?
+  No, a conversion script does not exist within the  phase20_standalone/  folder itself. However, conversion scripts do exist in the
+  parent repository's experimental folders:
+      • Inline Format (e.g.  Speaker 1 [00:00:00 - 00:00:10]: Text ): see step7_process_gt.py.
+      • Two-Line/Multi-Line Format (e.g. timestamp on line 1, text on line 2): see step2_process_gt.py or step7_process_gt.py.
+  2. Does  phase20_standalone  directly use JSON files?
+  Yes. The evaluation steps in the  phase20_standalone  pipeline directly expect pre-computed references:
+      • JSON format (for VAD, ASR, and fusion evaluations): bwc.json
+      • RTTM format (for diarization evaluation): bwc.rttm
