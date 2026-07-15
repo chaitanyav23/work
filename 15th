@@ -1,3 +1,193 @@
+This is the final release cleanup for the Phase20 standalone repository.
+
+DO NOT make any architectural changes.
+DO NOT change any model parameters.
+DO NOT change any evaluation logic.
+DO NOT change any published metrics.
+The pipeline is already reproducing the published Phase20 metrics exactly.
+
+==========================================================
+OBJECTIVE
+==========================================================
+
+The repository should now be fully release-ready.
+
+Only perform the following tasks.
+
+==========================================================
+1. REMOVE THE REMAINING BWC-SPECIFIC PARSER LOGIC
+==========================================================
+
+The previous validation found executable code in
+
+scripts/step00_ground_truth.py
+
+that still contains a special case similar to
+
+if file == "bwc"
+
+or
+
+apply_legacy_bwc_curation(...)
+
+This should be eliminated.
+
+The parser must behave identically for every recording.
+
+Do NOT special-case filenames.
+
+Instead:
+
+• make the parser generic
+• preserve the exact current behaviour for bwc
+• ensure the same parsing rules work for every transcript
+
+The parser should still reproduce
+
+ground_truth_json/bwc.json
+
+bit-for-bit (or semantically identical if ordering/whitespace differs).
+
+==========================================================
+2. VERIFY NO EXECUTABLE CODE DEPENDS ON "bwc"
+==========================================================
+
+Search only inside
+
+phase20_standalone/scripts
+
+for
+
+bwc
+
+If any executable code still depends on "bwc",
+
+remove it.
+
+Occurrences inside
+
+• comments
+• README
+• documentation
+• sample commands
+
+are acceptable.
+
+==========================================================
+3. RUN FULL VALIDATION
+==========================================================
+
+Run
+
+python run_phase20.py --file bwc
+
+using the published frozen environment.
+
+Do NOT use --overwrite.
+
+==========================================================
+4. VERIFY METRICS
+==========================================================
+
+Compare every generated metric against
+
+results_to_be_published.md
+
+Verify
+
+VAD
+
+ASR
+
+Diarization
+
+Fusion
+
+All metrics must match within floating-point precision.
+
+If any metric changes,
+
+STOP
+
+and explain exactly why.
+
+Do NOT attempt to "fix" the metrics.
+
+==========================================================
+5. VERIFY GROUND TRUTH
+==========================================================
+
+Regenerate
+
+ground_truth_json/bwc.json
+
+(using --overwrite ONLY for this isolated verification if necessary)
+
+Confirm:
+
+• 48 segments
+
+• normalized speaker names
+
+• identical timestamps
+
+• identical reference-word count
+
+• identical schema
+
+compared to the repository reference.
+
+==========================================================
+6. FINAL RELEASE AUDIT
+==========================================================
+
+Confirm:
+
+✓ no executable BWC-specific logic remains
+
+✓ parser is fully generic
+
+✓ published metrics reproduced
+
+✓ pipeline runs successfully
+
+✓ README validation section present
+
+✓ frozen environment untouched
+
+==========================================================
+7. FINAL REPORT
+==========================================================
+
+At the end provide:
+
+1. files modified
+
+2. explanation of every modification
+
+3. confirmation that the standalone implementation still reproduces the published Phase20 metrics
+
+4. output of
+
+rg -n "bwc" phase20_standalone/scripts
+
+and explain every remaining occurrence
+
+5. state one of ONLY TWO conclusions:
+
+RELEASE READY
+
+or
+
+NOT RELEASE READY
+
+Do not make speculative improvements.
+Do not refactor unrelated code.
+Do not change formatting.
+Keep modifications minimal.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 • I’ll run this as a release validation pass, keeping code frozen. First I’m checking the venv shape, README state, frozen environment
   files, and parser output before deleting generated artifacts.
 
