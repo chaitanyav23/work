@@ -1,0 +1,93 @@
+Yes, so okay, the we are starting with our presentation for today that is towards operational conversational intelligence for body worn cameras, and what we are proposing today is a speech intelligence framework for speaker activated conversations.
+
+Chaitanya Vishnoi 0 minutes 36 seconds
+So the long term vision of this work is to automatically understand interactions which are recorded by a body on cameras and rather than simply producing transcripts. The ultimate ultimate goal for this project is to understand conversations well enough to determine whether operational procedures.
+
+Chaitanya Vishnoi 0 minutes 57 seconds
+Followed, identify behavioral escalations and enable higher level conversations. Today's presentation focuses on the speech and intelligence layer that makes those higher level capabilities possible.
+
+Chaitanya Vishnoi 1 minute 11 seconds
+OK, so why operational conversational intelligence? Now the body worn cameras are now widely deployed by information enforcement agencies, generating massive volumes of audio video evidence everyday, and reviewing this footage manually is expensive, time consuming, and inconsistent.
+
+Chaitanya Vishnoi 1 minute 33 seconds
+To give you a example of the numbers, the client for this project, the Marston, they gave us a idea rough idea where they have 300 collection agents and each of this collection agent on a best day like collects over a 300 hours of video something.
+
+Chaitanya Vishnoi 1 minute 52 seconds
+3 right, and that is insane. So for like one single agent, and as we know that this is a lot of audio. so.
+
+Chaitanya Vishnoi 2 minutes 4 seconds
+Body on cameras are very, very widely used nowadays and the investigators in these agencies need to answer operational questions such as was the standard operating procedure followed or not? And if there was a confrontation in the conversation, who initiated it?
+
+Chaitanya Vishnoi 2 minutes 23 seconds
+And was the when did the interaction escalate? What evidence supports these conclusions and a lot of stuff. But moving when we talk about these body burn camera audios and videos, unlike meetings and podcast, these audios contains.
+
+Chaitanya Vishnoi 2 minutes 41 seconds
+Rapidly changing acoustic conditions such as there might be the speakers might be moving, there would be wind, there would be traffic, there would be some police radio or some kind of stuff and like may be shouting in between and most importantly there would be.
+
+Chaitanya Vishnoi 3 minutes
+Overlapping conversations, which is one of the biggest challenges we have faced with this with this type of data. and.
+
+Chaitanya Vishnoi 3 minutes 11 seconds
+
+Existing speech systems assume that relatively there are relatively clean conversational speech, basically telephonic conversations, some kind of meetings or podcasts, these kind of audios. But in our problem statement, in our domain, the we have a lot of environmental factors that are going on.
+
+Chaitanya Vishnoi 3 minutes 31 seconds
+And therefore the audio is fundamentally different.
+
+Chaitanya Vishnoi 3 minutes 35 seconds
+OK, now coming on to the important part. This is I guess one of the very important part of our presentation because this helps you understand what is the exact problem statement. So initially the objective of this work was not speech recognition, but it was basically.
+
+Chaitanya Vishnoi 3 minutes 55 seconds
+Can we automatically determine whether an officer followed the SOP or not? But while exploring this problem, we came to the conclusion that higher level reasoning is impossible without first understanding the conversation itself. And this naturally decomposed into 3 fundamental questions, which was very, very important.
+
+Chaitanya Vishnoi 4 minutes 15 seconds
+What was said, which is the speech recognition, who spoke when, which is the speaker diarization and who said what. Now there are individual architectures and stuff which answer the questions of speech recognition, what was said and speaker diarization.
+
+Chaitanya Vishnoi 4 minutes 34 seconds
+But there is not a complete single architecture which helps us with the speaker attribution. So there came the first problem. Now after we answer only after solving these questions can we build a complete conversational timeline and this timeline will later on become the foundation for the emotional.
+
+Chaitanya Vishnoi 4 minutes 55 seconds
+Emotion recognition, escalation detection, and SOP compliance. So here on our research shifted from the operational conversational intelligence to first building a robust speech intelligence framework.
+
+Chaitanya Vishnoi 5 minutes 12 seconds
+So coming on to our data to build our data, actually we needed different kinds of videos. So we started with some body on camera videos which were available in the YouTube and some podcast videos as well. This is the data.
+
+Chaitanya Vishnoi 5 minutes 32 seconds
+The data you see on the screen is one of the body one cameras video and interaction between a police officer and some person. And so before these transcriptions can begin, okay.
+
+Chaitanya Vishnoi 5 minutes 50 seconds
+Before everything, we needed to first understand what kind of metrics are we dealing with, right? The open source networks, the open source models which we are going to use, what kind of results do they give us? So for this particular pipeline, what we did was we simply introduce the raw audio.
+
+Chaitanya Vishnoi 6 minutes 10 seconds
+We ingested the video, we extracted the raw audio, and we simply pass them into individual models of Celero VAD. For a Sr, we used the Whisper X Large V3, and for speaker dialyzation, we used the Pionots dialyzation model, and the results, as you can see in the screen were.
+
+Chaitanya Vishnoi 6 minutes 30 seconds
+Not very good. And for example, you can see the for VAD, the false alarm rate is approximately 40%. That is huge and that is a very important part of our model because if we gain more false alarms, we will indirectly harm the later on models like diariser and the ASR.
+
+Chaitanya Vishnoi 6 minutes 52 seconds
+Similarly, the word error rate for a Sr was also not very good at approximately 30%. That means approximately one in every 3 words is causing some issues. And I want to highlight one thing that one of the important things was the number of deletions was very high.
+
+Chaitanya Vishnoi 7 minutes 12 seconds
+73 deletions in a single audio is very high because we cannot afford to lose important words for SOP compliance and all. We need those transcripts to be as much less error as possible, right? And the diarization error itself was also very high.
+
+Chaitanya Vishnoi 7 minutes 33 seconds
+Not moving on to like Sudhant, yes.
+
+
+Chaitanya Vishnoi
+8 minutes 16 seconds8:16
+Chaitanya Vishnoi 8 minutes 16 seconds
+Yeah, so as Shudhant explained, like the system VADs are not that helpful and that is why we went to the external VADs for help. So moving on to the framework now, so the final final thing we built consists first of the pre processing and VAD.
+
+Chaitanya Vishnoi 8 minutes 35 seconds
+And for this preprocessing, what we did was...
+
+Chaitanya Vishnoi 8 minutes 40 seconds
+We first input the raw audio in like extracted the raw audio from the video and then what we did was acoustic conditioning. This is basically we will get on this in more detail in the later slides. Basically, for ASR and diaryser, we introduce different types of preprocessing conditioning.
+
+Chaitanya Vishnoi 9 minutes 1 second
+So that it may help with those particular processes, for example, normalization and denoising. Such enhancement techniques were helpful for one part of the problem statement but not the other. So we introduced conditioning related to that particular state.
+
+Chaitanya Vishnoi 9 minutes 21 seconds
+And then we went on to the voice activity detection from which we basically extracted some groundings, and these were later on used as speech segments which were provided to the diarizer. and the.
+
